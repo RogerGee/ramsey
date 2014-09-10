@@ -1,0 +1,61 @@
+Language Specification - CS355 Compiler Project - Ethan Rutherford and Roger Gee
+--------------------------------------------------------------------------------
+A. Keywords
+
+   - keywords are lowercase
+
+[keywords]
+   in, boo, fun, endfun, toss, and, or, not, if, elf, endif, take, give, true,
+false
+--------------------------------------------------------------------------------
+B. Lexical Conventions
+
+   - here we present conventions for grammar productions
+   - we use (?) to mean that we are considering adding the convention
+
+[conventions]
+   token:
+        identifier
+        keyword
+        literal
+        operator
+        punctuator
+
+   digit: one of
+        0 1 2 3 4 5 6 7 8 9
+
+   hex-digit: one of
+        0 1 2 3 4 5 6 7 8 9 A B C D E F a b c d e f
+
+   non-digit: one of
+        a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K
+L M N O P Q R S T U V W X Y Z _
+
+   literal:
+        integer-literal
+        character-literal (?)
+        string-literal (?)
+        boolean-literal
+
+   integer-literal:
+        decimal-literal
+        hexadecimal-literal
+
+   decimal-literal:
+        digit
+        decimal-literal digit
+
+   hexadecimal-literal:
+        0x hex-digit
+        0X hex-digit
+        hexadecimal-literal hex-digit
+
+   boolean-literal:
+        true
+        false
+
+   identifier:
+        non-digit
+        identifier nondigit
+        identifier digit
+--------------------------------------------------------------------------------
