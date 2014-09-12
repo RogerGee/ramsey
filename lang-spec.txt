@@ -1,12 +1,14 @@
 Language Specification - CS355 Compiler Project - Ethan Rutherford and Roger Gee
 --------------------------------------------------------------------------------
+This document describes the specification for the 'Ramsey' language.
+--------------------------------------------------------------------------------
 A. Keywords
 
    - keywords are lowercase
 
 [keywords]
    in, boo, fun, endfun, toss, and, or, not, if, elf, endif, take, give, true,
-false
+false, while, for
 --------------------------------------------------------------------------------
 B. Lexical Conventions
 

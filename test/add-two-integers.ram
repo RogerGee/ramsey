@@ -1,0 +1,13 @@
+# Ramsey test program: add-two-integers.ram
+
+fun add(in a, in b)
+    toss a + b
+endfun
+
+in a
+in b
+
+take a
+take b
+
+give add(a,b)
