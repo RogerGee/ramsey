@@ -3,6 +3,7 @@
 #define LEXER_H
 #include <exception>
 #include <string>
+#include <vector>
 
 namespace ramsey
 {
@@ -60,6 +61,24 @@ namespace ramsey
         token_t _tkind;
         char* _tsource;
     };
+	
+	// the lexer class, reads the file and creates a stream of tokens
+	/*
+		(trying to follow your conventions as much as I can)
+		this is just a starting point, it will certainly need more functions
+	*/
+	class lexer
+	{
+	public:
+		lexer();
+		void read();		//read in the file (or perhaps we do that on construction?)
+		void tokenize();	//convert the char stream into a token stream / throw errors
+	private:
+		//perhaps a list instead? we'll discuss at some point.
+		//however, I do feel we ought to use stl where we can
+		std::vector<token> _stream;
+		//some way of saving the file. ofstream? char*? 
+	};
 }
 
 #endif
