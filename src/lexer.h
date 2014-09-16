@@ -91,13 +91,13 @@ namespace ramsey
 	{
 	public:
 		lexer();
-		void read();		//read in the file (or perhaps we do that on construction?)
-		void tokenize();	//convert the char stream into a token stream / throw errors
+		void read(/*file*/);	//read in the file (or perhaps we do that on construction?)
+		void tokenize();		//convert the char stream into a token stream / throw errors
 	private:
 		//perhaps a list instead? we'll discuss at some point.
 		//however, I do feel we ought to use stl where we can
 		std::vector<token> _stream;
-		//some way of saving the file. ofstream? char*? 
+		std::string _input;
 	};
 }
 

@@ -40,3 +40,25 @@ token::~token()
     if (_tsource != NULL)
         delete[] _tsource;
 }
+
+//initial guess at how we might do this.
+void Lexer::tokenize()
+{
+	int x = 0;
+	while (x < _input.length())
+	{
+		if (_input[x] == ' ')
+		{
+			x++;
+			continue;
+		}
+		// handle comments
+		if (_input[x] == '#')
+		{
+			while (_input[x+1] != '\n')
+				x++;
+			continue;
+		}
+		// handle (everything else)
+	}
+}
