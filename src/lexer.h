@@ -29,6 +29,7 @@ namespace ramsey
         token_id, // user-defined identifier
         token_number, // integer literal
         token_string, // string literal
+		token_bool, // boolean literal (true, false)
 
         // operators
         token_add, // '+'
@@ -36,13 +37,32 @@ namespace ramsey
         token_multiply, // '*'
         token_divide, // '/'
         token_mod, // the keyword operator 'mod'
+		token_assign, // '<-' (assignment operator)
+		token_oparen, // '('
+		token_cparen, // ')'
+		token_equal, // '='
+		token_less, // '<'
+		token_greater, // '>'
+		token_le, // '<='
+		token_ge, // '>='
 
         // keywords
         token_in, // the typename 'in' (meaning integer)
         token_boo, // the typename 'boo' (meaning boolean)
         token_if, // 'if'
         token_elf, // 'elf' (meaning else if)
-        token_endif // 'endif'
+        token_endif, // 'endif'
+		token_while, // 'while'
+		token_endwhile, // 'endwhile'
+		token_fun, // 'fun' (function declaration)
+		token_as, // 'as' (defines return type of function)
+		token_endfun, // 'endfun' (end of function)
+		token_toss, // 'toss' (return statement)
+		token_take, // 'take' (input operator)
+		token_give // 'give' (output operator)
+		
+		// delimiter
+		token_endl // '\n' (we have to denote the end of a statement)
     };
 
     // represents a lexical token
