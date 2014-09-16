@@ -1,13 +1,16 @@
 # Ramsey test program: add-two-integers.ram
 
-fun add(in a, in b)
+fun add(in a, in b) as in
     toss a + b
 endfun
 
 in a
 in b
 
+give "First integer: "
 take a
+give "Second integer: "
 take b
 
+give "Sum: "
 give add(a,b)

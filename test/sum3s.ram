@@ -1,20 +1,37 @@
 # Ramsey language test program
 #  sum3s.ram - Sum all positive multiples of 3 in [0,n]
 
-fun sum3s(in n)
-    if n = 0
+fun sum3s(in n) as in
+    if (n <= 0)
        toss 0
     endif
 
-    in thing = n mod 3
+    in thing <- n mod 3
 
-    if thing = 0
+    if (thing = 0)
+       # n is and will remain a multiple of 3
        toss n + sum3s(n-3)
     endif
 
+    # n will be some multiple of 3 from now on...
     toss sum3s(n-thing)
+endfun
+
+fun sum3s_alt(in n) as in
+    # base case
+    if (n <= 0)
+       toss 0
+    endif
+
+    # n may or may not be a multiple of 3
+    n <- 3*(n / 3)
+    # now n is some multiple of 3
+
+    # recursive call
+    toss n + sum3s_alt(n)
 endfun
 
 in n
 take n
 give sum3s(n)
+give sum3s_alt         (n)
