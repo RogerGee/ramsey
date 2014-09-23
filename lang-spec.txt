@@ -8,56 +8,231 @@ A. Keywords
 
 [keywords]
    in, boo, fun, endfun, toss, and, or, not, if, elf, endif, take, give, true,
-false, while, for
+false, while, smash, endwhile
 --------------------------------------------------------------------------------
 B. Lexical Conventions
 
    - here we present conventions for grammar productions
    - we use (?) to mean that we are considering adding the convention
 
-[conventions]
-   token:
+token:
         identifier
         keyword
         literal
         operator
         punctuator
 
-   digit: one of
+digit: one of
         0 1 2 3 4 5 6 7 8 9
 
-   hex-digit: one of
+hex-digit: one of
         0 1 2 3 4 5 6 7 8 9 A B C D E F a b c d e f
 
-   non-digit: one of
+non-digit: one of
         a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K
 L M N O P Q R S T U V W X Y Z _
 
-   literal:
+literal:
         integer-literal
         character-literal (?)
         string-literal (?)
         boolean-literal
 
-   integer-literal:
+integer-literal:
         decimal-literal
-        hexadecimal-literal
+        hexadecimal-literal (?)
 
-   decimal-literal:
+decimal-literal:
         digit
         decimal-literal digit
 
-   hexadecimal-literal:
+hexadecimal-literal:
         0x hex-digit
         0X hex-digit
         hexadecimal-literal hex-digit
 
-   boolean-literal:
+boolean-literal:
         true
         false
 
-   identifier:
+identifier:
         non-digit
         identifier nondigit
         identifier digit
+
+keyword:
+        if
+        elf
+        endif
+        fun
+        as
+        toss
+        endfun
+        while
+        smash
+        endwhile
+        give
+        take
+        in
+        boo
+        mod
+        and
+        or
+        not
+
+operator:
+        + - * / < > <= >= = !=
+
+punctuator:
+        newline
+        ,
+        ( )
+
+newline
+        (ASCII) 0x0A
+        (ASCII) 0x0D
+        (ASCII) 0x0A newline
+        (ASCII) 0x0D newline
+--------------------------------------------------------------------------------
+C. Grammar
+
+   - here we present a context-free grammar for Ramsey; this grammar employs 
+lexical conventions defined in the previous section (B)
+
+   - conventions used in this specification:
+     <nonterminal>          grammar element that is a non-terminal construct
+     [terminal]             grammar element that is one of a class of terminal constructs (usually a token)
+     "literal-terminal"     grammar element that is a terminal construct exactly as seen
+     ""                     empty element (epsilon)
+
+<program>:                                --we demand at least one non-empty statement
+        <non-empty-statement>
+        <program> <statement-list>
+        <program> <function>
+
+<function>:
+        <function-declaration> [newline] <statement-list> "endfun"
+
+<function-declaration>:
+        "fun" [identifier] "(" ")" <function-type-specifier>
+        "fun" [identifier] "(" <parameter-declaration> ")" <function-type-specifier>
+
+<function-type-specifier>:
+        ""                              --default "in" type function
+        "as" <typename>                 --explicit function typing
+
+<parameter-declaration>:
+        <typename> [identifier]
+        <typename> [identifier] "," <parameter-declaration>
+
+<statement>:                                    --each statement kind is separated by a newline
+        [newline]                               --empty statement
+        <declaration-statement>
+        <expression-statement>
+        <selection-statement>
+        <iterative-statement>
+        <io-statement>
+        <jump-statement>
+
+<non-empty-statement>:
+        <declaration-statement>
+        <expression-statement>
+        <selection-statement>
+        <iterative-statement>
+        <io-statement>
+        <jump-statement>
+
+<statement-list>:
+        <statement>
+        <statement> <statement-list>
+
+<declaration-statement>:
+        <typename> [identifier] [newline]
+        <typename> [identifier] <initializer> [newline]
+
+<typename>:
+        "in"
+        "boo"
+
+<initializer>:
+        <assignment-operator> <expression>
+        "[" [integer-literal] "]"                       --we allow primitive arrays; no member initialization though
+
+<assignment-operator>:
+        "<-"
+
+<expression-statement>:
+        <expression> [newline]
+
+<expression>:
+        <assignment-expression>
+
+<expression-list>
+        <expression>
+        <expression-list> "," <expression>
+
+<assignment-expression>:
+        <logical-or-expression>
+        <logical-or-expression> <assignment-operator> <assignment-expression>
+
+<logical-or-expression>:
+        <logical-and-expression>
+        <logical-or-expression> "or" <logical-and-expression>
+
+<logical-and-expression>:
+        <equality-expression>
+        <logical-and-expression> "and" <equality-expression>
+
+<equality-expression>:
+        <relational-expression>
+        <equality-expression> "=" <relational-expression>
+        <equality-expression> "!=" <relational-expression>
+
+<relational-expression>:
+        <additive-expression>
+        <relational-expression> "<" <additive-expression>
+        <relational-expression> ">" <additive-expression>
+        <relational-expression> "<=" <additive-expression>
+        <relational-expression> ">=" <additive-expression>
+
+<additive-expression>:
+        <multiplicative-expression>
+        <additive-expression> "+" <multiplicative-expression>
+        <additive-expression> "-" <multiplicative-expression>
+
+<multiplicative-expression>:
+        <postfix-expression>
+        <multiplicative-expression> "*" <postfix-expression>
+        <multiplicative-expression> "/" <postfix-expression>
+
+<postfix-expression>:
+        <primary-expression>
+        <postfix-expression> "[" <expression> "]"               --array subscripting
+        <postfix-expression> "("                                --function calls
+
+<primary-expression>:
+        [literal]
+        [identifier]
+        "(" <expression> ")"
+
+<selection-statement>:
+        "if" "(" <condition> ")" [newline] <if-body> "endif" [newline]
+
+<if-body>:
+        <statement-list>
+        <if-body> "elf" "(" <condition> ")" [newline] <statement-list>
+
+<condition>:                                  --just an alias for expression
+        <expression>
+
+<iterative-statement>:
+        "while" "(" <condition> ")" [newline] <statement-list> "endwhile" [newline]
+
+<io-statement>:
+        "give" <expression> [newline]
+        "take" <expression> [newline]
+
+<jump-statement>:
+        "toss" <expression> [newline]                   --note, there is no concept of void, so we demand that something need be returned
+        "smash" [newline]                               --a Ramsefied version of break; ends the execution of the nearest loop
 --------------------------------------------------------------------------------

@@ -41,6 +41,7 @@ namespace ramsey
 		token_oparen, // '('
 		token_cparen, // ')'
 		token_equal, // '='
+        token_nequal, // '!='
 		token_less, // '<'
 		token_greater, // '>'
 		token_le, // '<='
