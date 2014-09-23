@@ -10,7 +10,12 @@ A. Keywords
    in, boo, fun, endfun, toss, and, or, not, if, elf, endif, take, give, true,
 false, while, smash, endwhile
 --------------------------------------------------------------------------------
-B. Lexical Conventions
+B. Preprocessing
+
+   - Comments: we replace each comment with a newline token
+
+--------------------------------------------------------------------------------
+C. Lexical Conventions
 
    - here we present conventions for grammar productions
    - we use (?) to mean that we are considering adding the convention
@@ -88,13 +93,13 @@ punctuator:
         ,
         ( )
 
-newline
+newline                                 --we count LFs as logical lines for error reporting
         (ASCII) 0x0A
         (ASCII) 0x0D
         (ASCII) 0x0A newline
         (ASCII) 0x0D newline
 --------------------------------------------------------------------------------
-C. Grammar
+D. Grammar
 
    - here we present a context-free grammar for Ramsey; this grammar employs 
 lexical conventions defined in the previous section (B)
@@ -107,11 +112,16 @@ lexical conventions defined in the previous section (B)
 
 <program>:                                --we demand at least one non-empty statement
         <non-empty-statement>
-        <program> <statement-list>
-        <program> <function>
+        <program-body-parts> <non-empty-statement>
+
+<program-body-parts>:
+        <function>
+        <statement-list>
+        <function> <program-body-parts>
+        <statement-list> <program-body-parts>
 
 <function>:
-        <function-declaration> [newline] <statement-list> "endfun"
+        <function-declaration> [newline] <statement-list> "endfun" [newline]
 
 <function-declaration>:
         "fun" [identifier] "(" ")" <function-type-specifier>
@@ -126,7 +136,7 @@ lexical conventions defined in the previous section (B)
         <typename> [identifier] "," <parameter-declaration>
 
 <statement>:                                    --each statement kind is separated by a newline
-        [newline]                               --empty statement
+        ""                                      --empty statement (probably not needed)
         <declaration-statement>
         <expression-statement>
         <selection-statement>
@@ -201,14 +211,18 @@ lexical conventions defined in the previous section (B)
         <additive-expression> "-" <multiplicative-expression>
 
 <multiplicative-expression>:
-        <postfix-expression>
+        <prefix-expression>
         <multiplicative-expression> "*" <postfix-expression>
         <multiplicative-expression> "/" <postfix-expression>
+
+<prefix-expression>
+        <postfix-expression>
+        "not" <prefix-expression>
 
 <postfix-expression>:
         <primary-expression>
         <postfix-expression> "[" <expression> "]"               --array subscripting
-        <postfix-expression> "("                                --function calls
+        <postfix-expression> "(" <expression-list> ")"          --function calls
 
 <primary-expression>:
         [literal]
@@ -217,6 +231,7 @@ lexical conventions defined in the previous section (B)
 
 <selection-statement>:
         "if" "(" <condition> ")" [newline] <if-body> "endif" [newline]
+        "if" "(" <condition> ")" [newline] <if-body> "else" <statement-list> "endif" [newline]
 
 <if-body>:
         <statement-list>
