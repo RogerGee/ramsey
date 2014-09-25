@@ -1,45 +1,65 @@
 ################################################################################
 # Makefile for CS355 Compiler Project ##########################################
 ################################################################################
-.PHONY: install uninstall debug clean
+.PHONY: install uninstall debug test clean
 
 # programs and options
 PROGRAM_NAME = ramsey
-PROGRAM_NAME_DEBUG = ramsey=debug
+PROGRAM_NAME_DEBUG = ramsey-debug
+PROGRAM_NAME_TEST = ramsey-test
 OBJDIR_NAME = obj
 OBJDIR_NAME_DEBUG = dobj
 LINK = g++
 OUT = -o 
 
 # configuration options
-ifeq ($(MAKECMDGOALS),debug)
-COMPILE = g++ -g -c -Wall -pedantic-errors -Werror -Wextra -Wshadow -Wfatal-errors -Wno-unused-variable --std=gnu++0x
-OBJDIR = $(OBJDIR_NAME_DEBUG)
-PROGRAM = $(PROGRAM_NAME_DEBUG)
-else
+ifeq ($(MAKECMDGOALS),)
+# config for 'all'
 COMPILE = g++ -c -Wall -pedantic-errors -Werror -Wextra -Wshadow -Wfatal-errors -Wno-unused-variable --std=gnu++0x
 OBJDIR = $(OBJDIR_NAME)
 PROGRAM = $(PROGRAM_NAME)
+else
+# config for anything else (debug, test)
+COMPILE = g++ -g -c -Wall -pedantic-errors -Werror -Wextra -Wshadow -Wfatal-errors -Wno-unused-variable --std=gnu++0x
+OBJDIR = $(OBJDIR_NAME_DEBUG)
+MACROS = -DRAMSEY_DEBUG
+ifeq ($(MAKECMDGOALS),test)
+PROGRAM = $(PROGRAM_NAME_TEST)
+else
+PROGRAM = $(PROGRAM_NAME_DEBUG)
+endif
 endif
 
 # header file dependencies
+ALL_HEADER_FILES = lexer.h
 LEXER_H = lexer.h
 
 # object code files
 OBJECTS = lexer.o
+# add optional object code files depending on configuration
+ifeq ($(MAKECMDGOALS),test)
+OBJECTS := $(OBJECTS) test.o
+endif
 OBJECTS := $(addprefix $(OBJDIR)/,$(OBJECTS))
 
-# target rules
-all: $(OBJDIR) $(OBJECTS)
-	$(LINK) $(OUT)$(PROGRAM) $(OBJECTS)
-debug: $(OBJDIR) $(OBJECTS)
+# main target rules
+all: $(OBJDIR) $(PROGRAM)
+debug: $(OBJDIR) $(PROGRAM)
+test: $(OBJDIR) $(PROGRAM)
+
+# build program
+$(PROGRAM): $(OBJECTS)
 	$(LINK) $(OUT)$(PROGRAM) $(OBJECTS)
 
-$(OBJDIR):
-	mkdir $(OBJDIR)
-
+# build program modules
 $(OBJDIR)/lexer.o: lexer.cpp $(LEXER_H)
-	$(COMPILE) $(OUT)$(OBJDIR)/lexer.o lexer.cpp
+	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/lexer.o lexer.cpp
+$(OBJDIR)/test.o: test.cpp $(ALL_HEADER_FILES)
+	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/test.o test.cpp
+
+# other targets
+$(OBJDIR):
+	@mkdir $(OBJDIR)
 
 # special rules
 clean:

@@ -4,3 +4,6 @@ obj/
 dobj/
 Debug/
 Release/
+ramsey
+ramsey-debug
+ramsey-test

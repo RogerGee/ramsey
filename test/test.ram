@@ -1,2 +1,5 @@
 in x <- 42
 give x
+
+in thing<--5
++-*/<<-<--

@@ -86,12 +86,13 @@ keyword:
         not
 
 operator:
-        + - * / < > <= >= = !=
+        + - * / < > <= >= = != <-
 
 punctuator:
         newline
         ,
         ( )
+        [ ]
 
 newline                                 --we count LFs as logical lines for error reporting
         (ASCII) 0x0A
