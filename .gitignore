@@ -7,3 +7,5 @@ Release/
 ramsey
 ramsey-debug
 ramsey-test
+*.lnk
+*.exe

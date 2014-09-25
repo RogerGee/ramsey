@@ -347,13 +347,46 @@ void lexer::_convert(vector<ptoken>& ptoks)
             token_t t;
             bool isKeyword = true;
             // if the identifier is a keyword then flag it
-            if (iter->payload == "if")
+			if (iter->payload == "in")
+				t = token_in;
+			else if (iter->payload == "boo")
+				t = token_boo;
+            else if (iter->payload == "if")
                 t = token_if;
+			else if (iter->payload == "elf")
+				t = token_elf;
+			else if (iter->payload == "endif")
+				t = token_endif;
+			else if (iter->payload == "while")
+				t = token_while;
+			else if (iter->payload == "smash")
+				t = token_smash;
+			else if (iter->payload == "endwhile")
+				t = token_endwhile;
+			else if (iter->payload == "fun")
+				t = token_fun;
+			else if (iter->payload == "as")
+				t = token_as;
+			else if (iter->payload == "endfun")
+				t = token_endfun;
+			else if (iter->payload == "toss")
+				t = token_toss;
+			else if (iter->payload == "take")
+				t = token_take;
+			else if (iter->payload == "give")
+				t = token_give;
+			else if (iter->payload == "mod")
+				t = token_mod;
+			else if (iter->payload == "or")
+				t = token_boo;
+			else if (iter->payload == "and")
+				t = token_boo;
+			else if (iter->payload == "not")
+				t = token_boo;
             else if (iter->payload == "true")
                 t = token_bool_true;
             else if (iter->payload == "false")
                 t = token_bool_false;
-            // TODO: handle remaining keywords
             else {
                 isKeyword = false;
                 t = token_id;
