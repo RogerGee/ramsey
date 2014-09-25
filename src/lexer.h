@@ -117,7 +117,7 @@ namespace ramsey
 
         void _alloc(const char* source,int length);
     };
-	
+    
     // the lexer class, reads the file and creates a stream of tokens
     /*
       (trying to follow your conventions as much as I can)
@@ -127,8 +127,8 @@ namespace ramsey
     {
     public:
         lexer(const char* file);
-        void read(/*file*/);	//read in the file (or perhaps we do that on construction?)
-        void tokenize();		//convert the char stream into a token stream / throw errors
+        void read(/*file*/);    //read in the file (or perhaps we do that on construction?)
+        void tokenize();        //convert the char stream into a token stream / throw errors
 
         // provide means to access tokens
         const token& curtok() const
