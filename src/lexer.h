@@ -16,6 +16,8 @@ namespace ramsey
         virtual const char* what() const throw()
         { return _err.c_str(); }
     protected:
+        lexer_error_generic() {}
+
         void _cstor(const char* s)
         { const_cast<std::string&>(_err) = s; }
     private:

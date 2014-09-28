@@ -9,3 +9,5 @@ ramsey-debug
 ramsey-test
 *.lnk
 *.exe
+*.pdb
+*.ilk
