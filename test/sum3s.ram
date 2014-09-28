@@ -31,7 +31,7 @@ fun sum3s_alt(in n) as in
     toss n + sum3s_alt(n)
 endfun
 
-in n
-take n
-give sum3s(n)
-give sum3s_alt         (n)
+fun program(in n) # default 'in' type function
+    toss give sum3s(n)
+    toss give sum3s_alt         (n)
+endfun

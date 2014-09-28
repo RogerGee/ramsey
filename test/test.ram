@@ -1,5 +1,9 @@
-in x <- 42
-give x
+# test.ram
 
-in thing<--5
-+-*/<<-<--
+fun program()
+    in x <- 42
+
+    in thing<--5
+    
+    toss thing+x
+endfun

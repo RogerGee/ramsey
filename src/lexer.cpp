@@ -117,10 +117,10 @@ const char* token::to_string_kind() const
         return "token_le";
     case token_ge:
         return "token_ge";
-    case token_lscript:
+    /*case token_lscript: // removed from language
         return "token_lscript";
     case token_rscript:
-        return "token_rscript";
+        return "token_rscript";*/
     case token_comma:
         return "token_comma";
     case token_in:
@@ -147,10 +147,10 @@ const char* token::to_string_kind() const
         return "token_endfun";
     case token_toss:
         return "token_toss";
-    case token_take:
+    /*case token_take: // removed from language
         return "token_take";
     case token_give:
-        return "token_give";
+        return "token_give";*/
     case token_mod:
         return "token_mod";
     case token_or:
@@ -371,10 +371,10 @@ void lexer::_convert(vector<ptoken>& ptoks)
                 t = token_endfun;
             else if (iter->payload == "toss")
                 t = token_toss;
-            else if (iter->payload == "take")
+            /*else if (iter->payload == "take") // removed from language
                 t = token_take;
             else if (iter->payload == "give")
-                t = token_give;
+                t = token_give;*/
             else if (iter->payload == "mod")
                 t = token_mod;
             else if (iter->payload == "or")
@@ -451,10 +451,10 @@ void lexer::_convert(vector<ptoken>& ptoks)
                         t = token_oparen;
                     else if (strcmp(str,")") == 0)
                         t = token_cparen;
-                    else if (strcmp(str,"[") == 0)
+                    /*else if (strcmp(str,"[") == 0) // removed from language
                         t = token_lscript;
                     else if (strcmp(str,"]") == 0)
-                        t = token_rscript;
+                        t = token_rscript;*/
                     else if (strcmp(str,",") == 0)
                         t = token_comma;
                     else if (i == 0) {
@@ -488,6 +488,6 @@ void lexer::_convert(vector<ptoken>& ptoks)
 }
 /*static*/ inline bool lexer::isoppunc(int ch)
 {
-    static const string acceptChars("+-*/<>=!,()[]");
+    static const string acceptChars("+-*/<>=!,()");
     return acceptChars.find(char(ch)) != string::npos;
 }

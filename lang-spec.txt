@@ -7,13 +7,14 @@ A. Keywords
    - keywords are lowercase
 
 [keywords]
-   in, boo, fun, endfun, toss, and, or, not, if, elf, endif, take, give, true,
-false, while, smash, endwhile
+   in, boo, fun, endfun, toss, and, or, not, if, elf, endif, true, false, while,
+ smash, endwhile
 --------------------------------------------------------------------------------
 B. Preprocessing
 
    - Comments: we replace each comment with a newline token
-
+   - We compile a set of preprocessing tokens as an implementation strategy;
+these preprocessing tokens are translated into lexical tokens at a later time.
 --------------------------------------------------------------------------------
 C. Lexical Conventions
 
@@ -76,8 +77,6 @@ keyword:
         while
         smash
         endwhile
-        give
-        take
         in
         boo
         mod
@@ -92,7 +91,6 @@ punctuator:
         newline
         ,
         ( )
-        [ ]
 
 newline                                 --we count LFs as logical lines for error reporting
         (ASCII) 0x0A
@@ -111,38 +109,31 @@ lexical conventions defined in the previous section (B)
      "literal-terminal"     grammar element that is a terminal construct exactly as seen
      ""                     empty element (epsilon)
 
-<program>:                                --we demand at least one non-empty statement
-        <non-empty-statement>
-        <program-body-parts> <non-empty-statement>
-
-<program-body-parts>:
-        <function>
-        <statement-list>
-        <function> <program-body-parts>
-        <statement-list> <program-body-parts>
+<program>:                                --a program is one or more functions as we only
+        <function>                        --allow functions at file level
+        <program> <function>
 
 <function>:
-        <function-declaration> [newline] <statement-list> "endfun" [newline]
+        <function-declaration> <statement-list> "endfun" [newline]
 
 <function-declaration>:
         "fun" [identifier] "(" ")" <function-type-specifier>
         "fun" [identifier] "(" <parameter-declaration> ")" <function-type-specifier>
 
 <function-type-specifier>:
-        ""                              --default "in" type function
-        "as" <typename>                 --explicit function typing
+        [newline]                       --default "in" type function
+        "as" <typename> [newline]       --explicit function typing
 
 <parameter-declaration>:
         <typename> [identifier]
         <typename> [identifier] "," <parameter-declaration>
 
 <statement>:                                    --each statement kind is separated by a newline
-        ""                                      --empty statement (probably not needed)
+        ""                                      --empty statement, means we can have no statements in a function
         <declaration-statement>
         <expression-statement>
         <selection-statement>
         <iterative-statement>
-        <io-statement>
         <jump-statement>
 
 <non-empty-statement>:
@@ -167,7 +158,6 @@ lexical conventions defined in the previous section (B)
 
 <initializer>:
         <assignment-operator> <expression>
-        "[" [integer-literal] "]"                       --we allow primitive arrays; no member initialization though
 
 <assignment-operator>:
         "<-"
@@ -222,7 +212,6 @@ lexical conventions defined in the previous section (B)
 
 <postfix-expression>:
         <primary-expression>
-        <postfix-expression> "[" <expression> "]"               --array subscripting
         <postfix-expression> "(" <expression-list> ")"          --function calls
 
 <primary-expression>:
@@ -243,10 +232,6 @@ lexical conventions defined in the previous section (B)
 
 <iterative-statement>:
         "while" "(" <condition> ")" [newline] <statement-list> "endwhile" [newline]
-
-<io-statement>:
-        "give" <expression> [newline]
-        "take" <expression> [newline]
 
 <jump-statement>:
         "toss" <expression> [newline]                   --note, there is no concept of void, so we demand that something need be returned

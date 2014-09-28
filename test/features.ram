@@ -1,5 +1,6 @@
 # Ramsey language test program
 # features.ram - demonstrate features of language
+# (note: this file is obsolete)
 
 in score <- 0
 boo dead <- false

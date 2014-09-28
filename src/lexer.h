@@ -61,8 +61,8 @@ namespace ramsey
         token_greater, // '>'
         token_le, // '<='
         token_ge, // '>='
-        token_lscript, // '[' (left sub-scripting operator)
-        token_rscript, // ']' (right sub-scripting operator)
+        //token_lscript, // '[' (left sub-scripting operator) (removed from language)
+        //token_rscript, // ']' (right sub-scripting operator)
         token_comma, // ','
 
         // keywords
@@ -78,8 +78,8 @@ namespace ramsey
         token_as, // 'as' (defines return type of function)
         token_endfun, // 'endfun' (end of function)
         token_toss, // 'toss' (return statement)
-        token_take, // 'take' (input operator)
-        token_give, // 'give' (output operator)
+        //token_take, // 'take' (input operator) (removed from language)
+        //token_give, // 'give' (output operator)
         token_mod, // the keyword operator 'mod'
         token_or, // the keyword operator 'or'
         token_and, // the keyword operator 'and'

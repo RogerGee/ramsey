@@ -1,16 +1,13 @@
 # Ramsey test program: add-two-integers.ram
+#  build a driver C program to call 'program' with input 'a' and 'b'
 
 fun add(in a, in b) as in
     toss a + b
 endfun
 
-in a
-in b
+fun program(a,b)
+    in a
+    in b
 
-give "First integer: "
-take a
-give "Second integer: "
-take b
-
-give "Sum: "
-give add(a,b)
+    toss add(a,b)
+endfun
