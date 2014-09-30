@@ -167,10 +167,11 @@ const char* token::to_string_kind() const
 string token::to_string() const
 {
     string result = to_string_kind();
-    result += " { ";
-	if (_tsource)
-    result += _tsource;
-    result += " } ";
+    if (_tsource != NULL) {
+        result += " { ";
+        result += _tsource;
+        result += " } ";
+    }
     return result;
 }
 #endif
@@ -464,7 +465,7 @@ void lexer::_convert(vector<ptoken>& ptoks)
                     }
                     str[i] = swp;
                     if (t != token_invalid) {
-                        _stream.emplace_back(t,str,i);
+                        _stream.emplace_back(t);
                         break;
                     }
                     --i;

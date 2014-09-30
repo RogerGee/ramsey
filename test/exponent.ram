@@ -1,0 +1,8 @@
+# Assume power >= 0
+fun exponent (in base, in power) as in
+    in answer <- 1
+    while ( power > 0 )
+        answer <- answer * base
+        power <- power - 1
+    endwhile
+endfun

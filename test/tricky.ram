@@ -1,0 +1,11 @@
+fun myfun as boo
+    in i
+    i <- 5
+    if i<-5
+        toss i
+    elif i <--5
+        toss -1*i
+    endif
+
+    toss (not (not (not not true)))
+endfun
