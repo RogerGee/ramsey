@@ -167,9 +167,10 @@ const char* token::to_string_kind() const
 string token::to_string() const
 {
     string result = to_string_kind();
-    result += "{";
+    result += " { ";
+	if (_tsource)
     result += _tsource;
-    result += "}";
+    result += " } ";
     return result;
 }
 #endif

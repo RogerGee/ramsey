@@ -17,7 +17,7 @@ int main(int argc,const char* argv[])
         lexer lex(argv[1]);
 
         while (!lex.endtok()) {
-            cout << lex.curtok().to_string_kind() << ' ';
+            cout << lex.curtok().to_string_kind() << '\n';
             ++lex;
         }
         cout << endl;
