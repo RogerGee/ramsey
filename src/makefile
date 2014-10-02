@@ -67,3 +67,4 @@ clean:
 	@if [ -d $(OBJDIR_NAME_DEBUG) ]; then rm -r --verbose $(OBJDIR_NAME_DEBUG); fi;
 	@if [ -f $(PROGRAM_NAME) ]; then rm --verbose $(PROGRAM_NAME); fi;
 	@if [ -f $(PROGRAM_NAME_DEBUG) ]; then rm --verbose $(PROGRAM_NAME_DEBUG); fi;
+	@if [ -f $(PROGRAM_NAME_TEST) ]; then rm --verbose $(PROGRAM_NAME_TEST); fi;

@@ -3,7 +3,7 @@ fun myfun as boo
     i <- 5
     if i<-5
         toss i
-    elif i <--5
+    elf i <--5
         toss -1*i
     endif
 
