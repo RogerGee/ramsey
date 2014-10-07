@@ -1,0 +1,43 @@
+First, Follow and Predict Sets for Ramsey grammar
+--------------------------------------------------------------------------------
+Notation:
+        
+--------------------------------------------------------------------------------
+FIRST
+--------------------------------------------------------------------------------
+program{"fun"}
+function{"fun"}
+function-declaration{"fun"}
+function-type-specifier{"as",[newline]}
+parameter-declaration{")"}
+parameter{"in","boo"}
+parameter-list{",",")"}
+statement{"endfun","endif","else","elf","endwhile","in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
+statement-list{"endfun","endif","else","elf","endwhile","in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
+declaration-statement{"in","boo"}
+typename{"in","boo"}
+initializer{[newline],"<-"}
+assignment-operator{"<-"}
+expression-statement{"not",[identifier],[integer-literal],"true","false","("}
+expression types: [expression,prefix-expression]
+           {"not",[identifier],[integer-literal],"true","false","("}
+postfix-expression{[identifier],[integer-literal],"true","false","("}
+primary-expression{[identifier],[integer-literal],"true","false","("}
+selection-statement{"if"}
+if-body{"endfun","endif","else","elf","endwhile","in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
+if-concluder{"endif","else"}
+iterative-statement{"while"}
+jump-statement{"toss","smash"}
+--------------------------------------------------------------------------------
+FOLLOW
+--------------------------------------------------------------------------------
+program{"fun",$}
+function{"fun",$}
+function-declaration{"endfun","endif","else","elf","endwhile","in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
+function-type-specifier{[newline]}
+parameter-declaration{")"}
+parameter{")",","}
+parameter-list{")"}
+statement{"endfun","endif","else","elf","endwhile","in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
+statement-list{"endfun","endif","else","elf","endwhile"}
+declaration-statement,selection-statement,iterative-statement,jump-statement=statement

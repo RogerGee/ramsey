@@ -92,6 +92,9 @@ punctuator:
         ,
         ( )
 
+
+--Note: in this grammar, a single newline token counts for any sequence of newline tokens, though in 
+-- implementation, newline tokens will represent the logical line count for the input file
 newline                                 --we count LFs as logical lines for error reporting
         (ASCII) 0x0A
         (ASCII) 0x0D
@@ -117,16 +120,22 @@ lexical conventions defined in the previous section (B)
         <function-declaration> <statement-list> "endfun" [newline]
 
 <function-declaration>:
-        "fun" [identifier] "(" ")" <function-type-specifier>
-        "fun" [identifier] "(" <parameter-declaration> ")" <function-type-specifier>
+        "fun" [identifier] "(" <parameter-declaration> ")" <function-type-specifier> [newline]
 
 <function-type-specifier>:
-        [newline]                       --default "in" type function
-        "as" <typename> [newline]       --explicit function typing
+        ""                    --default "in" type function
+        "as" <typename>       --explicit function typing
 
 <parameter-declaration>:
+        ""
+        <parameter> <parameter-list>
+
+<parameter>:
         <typename> [identifier]
-        <typename> [identifier] "," <parameter-declaration>
+
+<parameter-list>:
+        ""
+        "," <parameter> <parameter-list>
 
 <statement>:                                    --each statement kind is separated by a newline
         ""                                      --empty statement, means we can have no statements in a function
@@ -136,20 +145,11 @@ lexical conventions defined in the previous section (B)
         <iterative-statement>
         <jump-statement>
 
-<non-empty-statement>:
-        <declaration-statement>
-        <expression-statement>
-        <selection-statement>
-        <iterative-statement>
-        <io-statement>
-        <jump-statement>
-
 <statement-list>:
-        <statement>
+        ""
         <statement> <statement-list>
 
 <declaration-statement>:
-        <typename> [identifier] [newline]
         <typename> [identifier] <initializer> [newline]
 
 <typename>:
@@ -157,6 +157,7 @@ lexical conventions defined in the previous section (B)
         "boo"
 
 <initializer>:
+        ""
         <assignment-operator> <expression>
 
 <assignment-operator>:
@@ -186,25 +187,37 @@ lexical conventions defined in the previous section (B)
 
 <equality-expression>:
         <relational-expression>
-        <equality-expression> "=" <relational-expression>
-        <equality-expression> "!=" <relational-expression>
+        <equality-expression> <equality-operator> <relational-expression>
+
+<equality-operator>:
+        "="
+        "!="
 
 <relational-expression>:
         <additive-expression>
-        <relational-expression> "<" <additive-expression>
-        <relational-expression> ">" <additive-expression>
-        <relational-expression> "<=" <additive-expression>
-        <relational-expression> ">=" <additive-expression>
+        <relational-expression> <relational-operator> <additive-expression>
+
+<relational-operator>:
+        "<"
+        ">"
+        "<="
+        ">="
 
 <additive-expression>:
         <multiplicative-expression>
-        <additive-expression> "+" <multiplicative-expression>
-        <additive-expression> "-" <multiplicative-expression>
+        <additive-expression> <additive-operator> <multiplicative-expression>
+
+<additive-operator>:
+        "+"
+        "-"
 
 <multiplicative-expression>:
         <prefix-expression>
-        <multiplicative-expression> "*" <postfix-expression>
-        <multiplicative-expression> "/" <postfix-expression>
+        <multiplicative-expression> <multiplicative-operator> <postfix-expression>
+
+<multiplicative-operator>:
+        "*"
+        "/"
 
 <prefix-expression>
         <postfix-expression>
@@ -220,12 +233,15 @@ lexical conventions defined in the previous section (B)
         "(" <expression> ")"
 
 <selection-statement>:
-        "if" "(" <condition> ")" [newline] <if-body> "endif" [newline]
-        "if" "(" <condition> ")" [newline] <if-body> "else" <statement-list> "endif" [newline]
+        "if" "(" <condition> ")" [newline] <if-body> <if-concluder>
 
 <if-body>:
         <statement-list>
         <if-body> "elf" "(" <condition> ")" [newline] <statement-list>
+
+<if-concluder>:
+        "endif" [newline]
+        "else" <statement-list> "endif" [newline]
 
 <condition>:                                  --just an alias for expression
         <expression>
