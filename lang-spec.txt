@@ -113,8 +113,11 @@ lexical conventions defined in the previous section (B)
      ""                     empty element (epsilon)
 
 <program>:                                --a program is one or more functions as we only
-        <function>                        --allow functions at file level
-        <program> <function>
+        <function-list>                   --allow functions at file level
+
+<function-list>        
+		<function> <function-list>
+		""
 
 <function>:
         <function-declaration> <statement-list> "endfun" [newline]
@@ -138,7 +141,6 @@ lexical conventions defined in the previous section (B)
         "," <parameter> <parameter-list>
 
 <statement>:                                    --each statement kind is separated by a newline
-        ""                                      --empty statement, means we can have no statements in a function
         <declaration-statement>
         <expression-statement>
         <selection-statement>

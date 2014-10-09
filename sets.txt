@@ -2,10 +2,12 @@ First, Follow and Predict Sets for Ramsey grammar
 --------------------------------------------------------------------------------
 Notation:
         
+        predict sets are given for each of each variable's productions
 --------------------------------------------------------------------------------
 FIRST
 --------------------------------------------------------------------------------
-program{"fun"}
+program{"fun",$}
+function-list{"fun",$}
 function{"fun"}
 function-declaration{"fun"}
 function-type-specifier{"as",[newline]}
@@ -31,8 +33,9 @@ jump-statement{"toss","smash"}
 --------------------------------------------------------------------------------
 FOLLOW
 --------------------------------------------------------------------------------
-program{"fun",$}
+program{$}
 function{"fun",$}
+function-list{$}
 function-declaration{"endfun","endif","else","elf","endwhile","in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
 function-type-specifier{[newline]}
 parameter-declaration{")"}
@@ -41,3 +44,53 @@ parameter-list{")"}
 statement{"endfun","endif","else","elf","endwhile","in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
 statement-list{"endfun","endif","else","elf","endwhile"}
 declaration-statement,selection-statement,iterative-statement,jump-statement=statement
+
+--------------------------------------------------------------------------------
+PREDICT
+--------------------------------------------------------------------------------
+program rules
+    1 {"fun",$}
+function-list
+    1 {"fun"}
+    2 {$}
+function
+    1 {"fun"}
+function-declaration
+    1 {"fun"}
+function-type-specifier
+    1 {[newline]}
+    2 {"as"}
+parameter-declaration
+    1 {")"}
+    2 {"in","boo"}
+parameter
+    1 {"in","boo"}
+parameter-list
+    1 {")"}
+    2 {","}
+statement
+    1 {"in","boo"}
+    2 {"not",[identifier],[integer-literal],"true","false","("}
+    3 {"if"}
+    4 {"while"}
+    5 {"toss","smash"}
+statement-list
+    1 {"endfun","endif","else","elf","endwhile","in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
+    2 {"in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
+declaration-statement
+    1 {"in","boo"}
+typename
+	1 {"in"}
+    2 {"boo"}
+initializer
+    1 {[newline]}
+    2 {"<-"}
+assignment-operator
+    1 {"<-"}
+expression-statement
+    1 {"not",[identifier],[integer-literal],"true","false","("}
+expression
+    1 {"not",[identifier],[literal],"true","false","("}
+expression-list
+    1 {"not",[identifier],[literal],"true","false","("}
+    2 {"umm..
