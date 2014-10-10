@@ -126,19 +126,19 @@ lexical conventions defined in the previous section (B)
         "fun" [identifier] "(" <parameter-declaration> ")" <function-type-specifier> [newline]
 
 <function-type-specifier>:
-        ""                    --default "in" type function
         "as" <typename>       --explicit function typing
+        ""                    --default "in" type function
 
 <parameter-declaration>:
-        ""
         <parameter> <parameter-list>
+        ""
 
 <parameter>:
         <typename> [identifier]
 
 <parameter-list>:
-        ""
         "," <parameter> <parameter-list>
+        ""
 
 <statement>:                                    --each statement kind is separated by a newline
         <declaration-statement>
@@ -148,8 +148,8 @@ lexical conventions defined in the previous section (B)
         <jump-statement>
 
 <statement-list>:
-        ""
         <statement> <statement-list>
+        ""
 
 <declaration-statement>:
         <typename> [identifier] <initializer> [newline]
@@ -159,75 +159,90 @@ lexical conventions defined in the previous section (B)
         "boo"
 
 <initializer>:
-        ""
         <assignment-operator> <expression>
+        ""
 
 <assignment-operator>:
         "<-"
 
-<expression-statement>:
-        <expression> [newline]
+<expression-statement>:                 --allow sequences of expressions in a single expression statement
+        <expression-list> [newline]     --e.g. i<-0, j<-1
 
 <expression>:
         <assignment-expression>
 
-<expression-list>
-        <expression>
-        <expression-list> "," <expression>
+<expression-list>:
+        <expression> <expression-list-item>
+
+<expression-list-item>:
+        "," <expression-list>
+        ""
 
 <assignment-expression>:
-        <logical-or-expression>
-        <logical-or-expression> <assignment-operator> <assignment-expression>
+        <logical-or-expression> <assignment-expression-opt>
+
+<assigment-expression-opt>:
+        <assignment-operator> <assignment-expression>
+        ""
 
 <logical-or-expression>:
-        <logical-and-expression>
-        <logical-or-expression> "or" <logical-and-expression>
+        <logical-and-expression> <logical-or-expression-opt>
+
+<logical-or-expression-opt>:
+        "or" <logical-or-expression>
+        ""
 
 <logical-and-expression>:
-        <equality-expression>
-        <logical-and-expression> "and" <equality-expression>
+        <equality-expression> <logical-and-expression-opt>
+
+<logical-and-expression-opt>:
+        "and" <logical-and-expression>
+        ""
 
 <equality-expression>:
-        <relational-expression>
-        <equality-expression> <equality-operator> <relational-expression>
+        <relational-expression> <equality-expression-opt>
 
-<equality-operator>:
-        "="
-        "!="
+<equality-expression-opt>:
+        "=" <equality-expression>
+        "!=" <equality-expression>
+        ""
 
 <relational-expression>:
-        <additive-expression>
-        <relational-expression> <relational-operator> <additive-expression>
+        <additive-expression> <relational-expression-opt>
 
-<relational-operator>:
-        "<"
-        ">"
-        "<="
-        ">="
+<relational-expression-opt>:
+        "<" <relational-expression>
+        ">" <relational-expression>
+        "<=" <relational-expression>
+        ">=" <relational-expression>
+        ""
 
 <additive-expression>:
-        <multiplicative-expression>
-        <additive-expression> <additive-operator> <multiplicative-expression>
+        <multiplicative-expression> <additive-expression-opt>
 
-<additive-operator>:
-        "+"
-        "-"
+<additive-expression-opt>:
+        "+" <additive-expression>
+        "-" <additive-expression>
+        ""
 
 <multiplicative-expression>:
-        <prefix-expression>
-        <multiplicative-expression> <multiplicative-operator> <postfix-expression>
+        <prefix-expression> <multiplicative-expression-opt>
 
-<multiplicative-operator>:
-        "*"
-        "/"
+<multiplicative-expression-opt>:
+        "*" <multiplicative-expression>
+        "/" <multiplicative-expression>
+        ""
 
 <prefix-expression>
         <postfix-expression>
         "not" <prefix-expression>
 
 <postfix-expression>:
-        <primary-expression>
-        <postfix-expression> "(" <expression-list> ")"          --function calls
+        <primary-expression> <postfix-expression-opt>
+
+<postfix-expression-opt>:
+        "(" <expression-list> ")"          --function calls
+        ""
 
 <primary-expression>:
         [literal]
@@ -252,6 +267,6 @@ lexical conventions defined in the previous section (B)
         "while" "(" <condition> ")" [newline] <statement-list> "endwhile" [newline]
 
 <jump-statement>:
-        "toss" <expression> [newline]                   --note, there is no concept of void, so we demand that something need be returned
+        "toss" <expression> [newline]                   --note, there is no concept of void, so we demand that something needs to be returned
         "smash" [newline]                               --a Ramsefied version of break; ends the execution of the nearest loop
 --------------------------------------------------------------------------------
