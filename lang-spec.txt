@@ -253,8 +253,11 @@ lexical conventions defined in the previous section (B)
         "if" "(" <condition> ")" [newline] <if-body> <if-concluder>
 
 <if-body>:
-        <statement-list>
-        <if-body> "elf" "(" <condition> ")" [newline] <statement-list>
+        <statement-list> <elf-body>
+
+<elf-body>
+        "elf" "(" <condition> ")" [newline] <if-body>
+		""
 
 <if-concluder>:
         "endif" [newline]

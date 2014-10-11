@@ -11,22 +11,40 @@ function-list{"fun",$}
 function{"fun"}
 function-declaration{"fun"}
 function-type-specifier{"as",[newline]}
-parameter-declaration{")"}
+parameter-declaration{"in","boo",")"}
 parameter{"in","boo"}
 parameter-list{",",")"}
-statement{"endfun","endif","else","elf","endwhile","in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
-statement-list{"endfun","endif","else","elf","endwhile","in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
+statement{"in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
+statement-list{"in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
 declaration-statement{"in","boo"}
 typename{"in","boo"}
-initializer{[newline],"<-"}
+initializer{"<-",[newline]}
 assignment-operator{"<-"}
-expression-statement{"not",[identifier],[integer-literal],"true","false","("}
-expression types: [expression,prefix-expression]
-           {"not",[identifier],[integer-literal],"true","false","("}
+expression-statement{[identifier],[integer-literal],"true","false","(","not"}
+expression{[identifier],[integer-literal],"true","false","(","not"}
+expression-list{[identifier],[integer-literal],"true","false","(","not"}
+expression-list-item{",",[newline]}
+assignment-expression{[identifier],[integer-literal],"true","false","(","not"}
+assignment-expression-opt{"<-",",",[newline]}
+logical-or-expression{[identifier],[integer-literal],"true","false","(","not"}
+logical-or-expression-opt{"or","<-",",",[newline]}
+logical-and-expression{[identifier],[integer-literal],"true","false","(","not"}
+logical-and-expression-opt{"and","or","<-",",",[newline]}
+equality-expression{[identifier],[integer-literal],"true","false","(","not"}
+equality-expression-opt{"=","!=","and","or","<-",",",[newline]}
+relational-expression{[identifier],[integer-literal],"true","false","(","not"}
+relational-expression-opt{"<",">","<=",">=","=","!=","and","or","<-",",",[newline]}
+additive-expression{[identifier],[integer-literal],"true","false","(","not"}
+additive-expression-opt{"+","-","<",">","<=",">=","=","!=","and","or","<-",",",[newline]}
+multiplicative-expresion{[identifier],[integer-literal],"true","false","(","not"}
+multiplicative-expression-opt{"*","/","+","-","<",">","<=",">=","=","!=","and","or","<-",",",[newline]}
+prefix-expression{[identifier],[integer-literal],"true","false","(","not"}
 postfix-expression{[identifier],[integer-literal],"true","false","("}
+postfix-expression-opt{"(","*","/","+","-","<",">","<=",">=","=","!=","and","or","<-",",",[newline]}
 primary-expression{[identifier],[integer-literal],"true","false","("}
 selection-statement{"if"}
 if-body{"endfun","endif","else","elf","endwhile","in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
+elf-body{"elf","endif","else"}
 if-concluder{"endif","else"}
 iterative-statement{"while"}
 jump-statement{"toss","smash"}
@@ -48,7 +66,7 @@ declaration-statement,selection-statement,iterative-statement,jump-statement=sta
 --------------------------------------------------------------------------------
 PREDICT
 --------------------------------------------------------------------------------
-program rules
+program
     1 {"fun",$}
 function-list
     1 {"fun"}
@@ -58,16 +76,16 @@ function
 function-declaration
     1 {"fun"}
 function-type-specifier
-    1 {[newline]}
-    2 {"as"}
+    1 {"as"}
+    2 {[newline]}
 parameter-declaration
-    1 {")"}
-    2 {"in","boo"}
+    1 {"in","boo"}
+    2 {")"}
 parameter
     1 {"in","boo"}
 parameter-list
-    1 {")"}
-    2 {","}
+    1 {","}
+    2 {")"}
 statement
     1 {"in","boo"}
     2 {"not",[identifier],[integer-literal],"true","false","("}
@@ -75,22 +93,93 @@ statement
     4 {"while"}
     5 {"toss","smash"}
 statement-list
-    1 {"endfun","endif","else","elf","endwhile","in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
-    2 {"in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
+    1 {"in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
+    2 {"else","elf","endif","endfun","endwhile"}
 declaration-statement
     1 {"in","boo"}
 typename
 	1 {"in"}
     2 {"boo"}
 initializer
-    1 {[newline]}
-    2 {"<-"}
+    1 {"<-"}
+    2 {[newline]}
 assignment-operator
     1 {"<-"}
 expression-statement
-    1 {"not",[identifier],[integer-literal],"true","false","("}
+    1 {[identifier],[integer-literal],"true","false","(","not"}
 expression
-    1 {"not",[identifier],[literal],"true","false","("}
+    1 {[identifier],[integer-literal],"true","false","(","not"}
 expression-list
-    1 {"not",[identifier],[literal],"true","false","("}
-    2 {"umm..
+    1 {[identifier],[integer-literal],"true","false","(","not"}
+expression-list-item
+    1 {","}
+    2 {[newline]}
+assignment-expression
+    1 {[identifier],[integer-literal],"true","false","(","not"}
+assignment-expression-opt
+    1 {"<-"}
+    2 {","}
+logical-or-expression
+    1 {[identifier],[integer-literal],"true","false","(","not"}
+logical-or-expression-opt
+    1 {"or"}
+    2 {",","<-"}
+logical-and-expression
+    1 {[identifier],[integer-literal],"true","false","(","not"}
+logical-and-expression-opt
+    1 {"and"}
+    2 {",","<-","or"}
+equality-expression
+    1 {[identifier],[integer-literal],"true","false","(","not"}
+equality-expression-opt
+    1 {"="}
+    2 {"!="}
+	3 {",","<-","or","and"}
+relational-expression
+	1 {[identifier],[integer-literal],"true","false","(","not"}
+relational-expression-opt
+	1 {"<"}
+	2 {">"}
+	3 {"<="}
+	4 {">="}
+	5 {",","<-","or","and","=","!="}
+additive-expression
+	1 {[identifier],[integer-literal],"true","false","(","not"}
+additive-expression-opt
+	1 {"+"}
+	2 {"-"}
+	3 {",","<-","or","and","=","!=","<",">","<=",">="}
+multiplicative-expression
+	1 {[identifier],[integer-literal],"true","false","(","not"}
+multiplicative-expression-opt
+	1 {"*"}
+	2 {"/"}
+	3 {",","<-","or","and","=","!=","<",">","<=",">=","+","-"}
+prefix-expression
+	1 {[identifier],[integer-literal],"true","false","(","not"}
+	2 {"not"}
+postfix-expression
+	1 {[identifier],[integer-literal],"true","false","(","not"}
+postfix-expression-opt
+	1 {")"}
+	2 {",","<-","or","and","=","!=","<",">","<=",">=","+","-","*","/"}
+primary-expression
+	1 {[integer-literal],"true","false"}
+	2 {[identifier]}
+	3 {"("}
+selection-statement
+	1 {"if"}
+if-body
+	1 {"in","boo","not",[identifier],[integer-literal],"true","false","(","if","while","toss","smash"}
+elf-body
+	1 {"elf"}
+	2 {"endif","else"}
+if-concluder
+	1 {"endif"}
+	2 {"else"}
+condition = expression
+iterative-statement
+	1 {"while"}
+jump-statement
+	1 {"toss"}
+	2 {"smash"}
