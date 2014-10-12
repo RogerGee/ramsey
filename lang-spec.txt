@@ -231,6 +231,7 @@ lexical conventions defined in the previous section (B)
 <multiplicative-expression-opt>:
         "*" <multiplicative-expression>
         "/" <multiplicative-expression>
+        "mod" <multiplicative-expression>
         ""
 
 <prefix-expression>

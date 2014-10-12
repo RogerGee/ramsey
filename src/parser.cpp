@@ -81,16 +81,16 @@ parser::parser(const char* file) : lex(file)
     program(lex);
 }
 
-bool eol(lexer& lex)	// eat all endlines and return whether there were any
+bool eol(lexer& lex)    // eat all endlines and return whether there were any
 {
-	bool ans = false;
-	while (!lex.endtok() && lex.curtok().type() == token_eol)
-	{
-		ans = true;
-		lex++;
-		linenumber++;
-	}
-	return ans;
+    bool ans = false;
+    while (!lex.endtok() && lex.curtok().type() == token_eol)
+    {
+        ans = true;
+        lex++;
+        linenumber++;
+    }
+    return ans;
 }
 
 // recursive call definitions
@@ -103,7 +103,7 @@ void program(lexer& lex)
 void function_list(lexer& lex)
 {
     eol(lex);
-	if (lex.endtok())
+    if (lex.endtok())
         return;
     else if (lex.curtok().type() == token_fun)
     {
@@ -187,7 +187,7 @@ void parameter_list(lexer& lex)
     if (lex.curtok().type() == token_comma)
     {
         lex++;
-		parameter(lex);
+        parameter(lex);
         parameter_list(lex);
     }
     else if (lex.curtok().type() == token_cparen)
@@ -253,8 +253,8 @@ void type_name(lexer& lex)
 {
     if (lex.curtok().type() == token_in)
         lex++;
-	else if (lex.curtok().type() == token_boo)
-		lex++;
+    else if (lex.curtok().type() == token_boo)
+        lex++;
     else
         throw parser_error("Typename specifier expected. Line %i.", linenumber);
 }
@@ -324,7 +324,7 @@ void assignment_expression_opt(lexer& lex)
         assignment_expression(lex);
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
-		lex.curtok().type() == token_comma)
+        lex.curtok().type() == token_comma)
         return;
     else
         throw parser_error("Improper expression conclusion. Line %i.", linenumber);
@@ -344,7 +344,7 @@ void logical_or_expression_opt(lexer& lex)
         logical_or_expression(lex);
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
-		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign)
+        lex.curtok().type() == token_comma || lex.curtok().type() == token_assign)
         return;
     else
         throw parser_error("Improper expression conclusion. Line %i.", linenumber);
@@ -364,7 +364,7 @@ void logical_and_expression_opt(lexer& lex)
         logical_and_expression(lex);
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
-		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
+        lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
         lex.curtok().type() == token_or)
         return;
     else
@@ -390,7 +390,7 @@ void equality_expression_opt(lexer& lex)
         equality_expression(lex);
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
-		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
+        lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
         lex.curtok().type() == token_or || lex.curtok().type() == token_and)
         return;
     else
@@ -426,7 +426,7 @@ void relational_expression_opt(lexer& lex)
         relational_expression(lex);
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
-		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
+        lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
         lex.curtok().type() == token_or || lex.curtok().type() == token_and ||
         lex.curtok().type() == token_equal || lex.curtok().type() == token_nequal)
         return;
@@ -453,7 +453,7 @@ void additive_expression_opt(lexer& lex)
         additive_expression(lex);
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
-		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
+        lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
         lex.curtok().type() == token_or || lex.curtok().type() == token_and ||
         lex.curtok().type() == token_equal || lex.curtok().type() == token_nequal ||
         lex.curtok().type() == token_less || lex.curtok().type() == token_greater ||
@@ -481,9 +481,15 @@ void multiplicative_expression_opt(lexer& lex)
         lex++;
         multiplicative_expression(lex);
     }
+    else if (lex.curtok().type() == token_mod)
+    {
+        lex++;
+        multiplicative_expression(lex);
+    }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
-		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
+        lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
         lex.curtok().type() == token_or || lex.curtok().type() == token_and ||
+        lex.curtok().type() == token_equal || lex.curtok().type() == token_nequal ||
         lex.curtok().type() == token_less || lex.curtok().type() == token_greater ||
         lex.curtok().type() == token_le || lex.curtok().type() == token_ge ||
         lex.curtok().type() == token_add || lex.curtok().type() == token_subtract)
@@ -523,13 +529,14 @@ void postfix_expression_opt(lexer& lex)
             throw parser_error("Expected ')'. Line %i.", linenumber);
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
-		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
+        lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
         lex.curtok().type() == token_or || lex.curtok().type() == token_and ||
         lex.curtok().type() == token_equal || lex.curtok().type() == token_nequal ||
         lex.curtok().type() == token_less || lex.curtok().type() == token_greater ||
         lex.curtok().type() == token_le || lex.curtok().type() == token_ge ||
         lex.curtok().type() == token_add || lex.curtok().type() == token_subtract ||
-        lex.curtok().type() == token_multiply || lex.curtok().type() == token_divide)
+        lex.curtok().type() == token_multiply || lex.curtok().type() == token_divide ||
+        lex.curtok().type() == token_mod)
         return;
     else
         throw parser_error("Improper expression conclusion. Line %i.", linenumber);
