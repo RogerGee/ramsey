@@ -195,7 +195,7 @@ postfix-expression
     1 {[identifier],[integer-literal],"true","false","(","not"}
     
 postfix-expression-opt
-    1 {")"}
+    1 {"("}
     2 {",","<-","or","and","=","!=","<",">","<=",">=","+","-","*","/"}
     
 primary-expression
