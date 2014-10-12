@@ -268,7 +268,7 @@ lexer lexer::operator ++(int)
             do {
                 tok.payload.push_back(ch);
                 ch = fgetc(input);
-            } while (isalpha(ch) || ch=='_');
+            } while (isalpha(ch) || ch=='_' || isdigit(ch));
             ungetc(ch,input);
         }
         else if (ch == '\"') {

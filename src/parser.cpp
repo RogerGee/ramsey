@@ -102,7 +102,8 @@ void program(lexer& lex)
 
 void function_list(lexer& lex)
 {
-    if (lex.endtok())
+    eol(lex);
+	if (lex.endtok())
         return;
     else if (lex.curtok().type() == token_fun)
     {
@@ -185,7 +186,8 @@ void parameter_list(lexer& lex)
 {
     if (lex.curtok().type() == token_comma)
     {
-        parameter(lex);
+        lex++;
+		parameter(lex);
         parameter_list(lex);
     }
     else if (lex.curtok().type() == token_cparen)
@@ -302,7 +304,7 @@ void expression_list_item(lexer& lex)
         lex++;
         expression_list(lex);
     }
-    else if (lex.curtok().type() == token_eol)
+    else if (lex.curtok().type() == token_eol || lex.curtok().type() == token_cparen)
         return;
     else
         throw parser_error("improperly formatted expression. Line %i.", linenumber);
