@@ -84,7 +84,7 @@ parser::parser(const char* file) : lex(file)
 bool eol(lexer& lex)	// eat all endlines and return whether there were any
 {
 	bool ans = false;
-	while (!lex.endtok() and lex.curtok().type() == token_eol)
+	while (!lex.endtok() && lex.curtok().type() == token_eol)
 	{
 		ans = true;
 		lex++;
@@ -161,7 +161,7 @@ void function_type_specifier(lexer& lex)
 
 void parameter_declaration(lexer& lex)
 {
-    if (lex.curtok().type() == token_in or lex.curtok().type() == token_boo)
+    if (lex.curtok().type() == token_in || lex.curtok().type() == token_boo)
     {
         parameter(lex);
         parameter_list(lex);
@@ -196,19 +196,19 @@ void parameter_list(lexer& lex)
 
 void statement(lexer& lex)
 {
-    if (lex.curtok().type() == token_in or lex.curtok().type() == token_boo)
+    if (lex.curtok().type() == token_in || lex.curtok().type() == token_boo)
         declaration_statement(lex);
-    else if (lex.curtok().type() == token_cparen or lex.curtok().type() == token_not
-        or lex.curtok().type() == token_id or lex.curtok().type() == token_bool_true
-        or lex.curtok().type() == token_bool_false or lex.curtok().type() == token_number
-        or lex.curtok().type() == token_number_hex or lex.curtok().type() == token_string
-        or lex.curtok().type() == token_oparen)
+    else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_not
+        || lex.curtok().type() == token_id || lex.curtok().type() == token_bool_true
+        || lex.curtok().type() == token_bool_false || lex.curtok().type() == token_number
+        || lex.curtok().type() == token_number_hex || lex.curtok().type() == token_string
+        || lex.curtok().type() == token_oparen)
         expression_statement(lex);
     else if (lex.curtok().type() == token_if)
         selection_statement(lex);
     else if (lex.curtok().type() == token_while)
         iterative_statement(lex);
-    else if (lex.curtok().type() == token_toss or lex.curtok().type() == token_smash)
+    else if (lex.curtok().type() == token_toss || lex.curtok().type() == token_smash)
         jump_statement(lex);
     else
         throw parser_error("Incorrect statement start. Line %i.", linenumber);
@@ -216,19 +216,19 @@ void statement(lexer& lex)
 
 void statement_list(lexer& lex)
 {
-    if (lex.curtok().type() == token_in or lex.curtok().type() == token_boo or
-        lex.curtok().type() == token_id or lex.curtok().type() == token_number or
-        lex.curtok().type() == token_number_hex or lex.curtok().type() == token_bool_true or
-        lex.curtok().type() == token_bool_false or lex.curtok().type() == token_string or
-        lex.curtok().type() == token_oparen or lex.curtok().type() == token_if or
-        lex.curtok().type() == token_while or lex.curtok().type() == token_toss or
+    if (lex.curtok().type() == token_in || lex.curtok().type() == token_boo ||
+        lex.curtok().type() == token_id || lex.curtok().type() == token_number ||
+        lex.curtok().type() == token_number_hex || lex.curtok().type() == token_bool_true ||
+        lex.curtok().type() == token_bool_false || lex.curtok().type() == token_string ||
+        lex.curtok().type() == token_oparen || lex.curtok().type() == token_if ||
+        lex.curtok().type() == token_while || lex.curtok().type() == token_toss ||
         lex.curtok().type() == token_smash)
     {
         statement(lex);
         statement_list(lex);
     }
-    else if (lex.curtok().type() == token_else or lex.curtok().type() == token_elf or
-        lex.curtok().type() == token_endif or lex.curtok().type() == token_endfun or
+    else if (lex.curtok().type() == token_else || lex.curtok().type() == token_elf ||
+        lex.curtok().type() == token_endif || lex.curtok().type() == token_endfun ||
         lex.curtok().type() == token_endwhile)
         return;
     else
@@ -321,7 +321,7 @@ void assignment_expression_opt(lexer& lex)
         assignment_operator(lex);
         assignment_expression(lex);
     }
-    else if (lex.curtok().type() == token_cparen or lex.curtok().type() == token_eol or
+    else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
 		lex.curtok().type() == token_comma)
         return;
     else
@@ -341,8 +341,8 @@ void logical_or_expression_opt(lexer& lex)
         lex++;
         logical_or_expression(lex);
     }
-    else if (lex.curtok().type() == token_cparen or lex.curtok().type() == token_eol or
-		lex.curtok().type() == token_comma or lex.curtok().type() == token_assign)
+    else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
+		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign)
         return;
     else
         throw parser_error("Improper expression conclusion. Line %i.", linenumber);
@@ -361,8 +361,8 @@ void logical_and_expression_opt(lexer& lex)
         lex++;
         logical_and_expression(lex);
     }
-    else if (lex.curtok().type() == token_cparen or lex.curtok().type() == token_eol or
-		lex.curtok().type() == token_comma or lex.curtok().type() == token_assign or
+    else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
+		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
         lex.curtok().type() == token_or)
         return;
     else
@@ -387,9 +387,9 @@ void equality_expression_opt(lexer& lex)
         lex++;
         equality_expression(lex);
     }
-    else if (lex.curtok().type() == token_cparen or lex.curtok().type() == token_eol or
-		lex.curtok().type() == token_comma or lex.curtok().type() == token_assign or
-        lex.curtok().type() == token_or or lex.curtok().type() == token_and)
+    else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
+		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
+        lex.curtok().type() == token_or || lex.curtok().type() == token_and)
         return;
     else
         throw parser_error("Improper expression conclusion. Line %i.", linenumber);
@@ -423,10 +423,10 @@ void relational_expression_opt(lexer& lex)
         lex++;
         relational_expression(lex);
     }
-    else if (lex.curtok().type() == token_cparen or lex.curtok().type() == token_eol or
-		lex.curtok().type() == token_comma or lex.curtok().type() == token_assign or
-        lex.curtok().type() == token_or or lex.curtok().type() == token_and or
-        lex.curtok().type() == token_equal or lex.curtok().type() == token_nequal)
+    else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
+		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
+        lex.curtok().type() == token_or || lex.curtok().type() == token_and ||
+        lex.curtok().type() == token_equal || lex.curtok().type() == token_nequal)
         return;
     else
         throw parser_error("Improper expression conclusion. Line %i.", linenumber);
@@ -450,12 +450,12 @@ void additive_expression_opt(lexer& lex)
         lex++;
         additive_expression(lex);
     }
-    else if (lex.curtok().type() == token_cparen or lex.curtok().type() == token_eol or
-		lex.curtok().type() == token_comma or lex.curtok().type() == token_assign or
-        lex.curtok().type() == token_or or lex.curtok().type() == token_and or
-        lex.curtok().type() == token_equal or lex.curtok().type() == token_nequal or
-        lex.curtok().type() == token_less or lex.curtok().type() == token_greater or
-        lex.curtok().type() == token_le or lex.curtok().type() == token_ge)
+    else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
+		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
+        lex.curtok().type() == token_or || lex.curtok().type() == token_and ||
+        lex.curtok().type() == token_equal || lex.curtok().type() == token_nequal ||
+        lex.curtok().type() == token_less || lex.curtok().type() == token_greater ||
+        lex.curtok().type() == token_le || lex.curtok().type() == token_ge)
         return;
     else
         throw parser_error("Improper expression conclusion. Line %i.", linenumber);
@@ -479,12 +479,12 @@ void multiplicative_expression_opt(lexer& lex)
         lex++;
         multiplicative_expression(lex);
     }
-    else if (lex.curtok().type() == token_cparen or lex.curtok().type() == token_eol or
-		lex.curtok().type() == token_comma or lex.curtok().type() == token_assign or
-        lex.curtok().type() == token_or or lex.curtok().type() == token_and or
-        lex.curtok().type() == token_less or lex.curtok().type() == token_greater or
-        lex.curtok().type() == token_le or lex.curtok().type() == token_ge or
-        lex.curtok().type() == token_add or lex.curtok().type() == token_subtract)
+    else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
+		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
+        lex.curtok().type() == token_or || lex.curtok().type() == token_and ||
+        lex.curtok().type() == token_less || lex.curtok().type() == token_greater ||
+        lex.curtok().type() == token_le || lex.curtok().type() == token_ge ||
+        lex.curtok().type() == token_add || lex.curtok().type() == token_subtract)
         return;
     else
         throw parser_error("Improper expression conclusion. Line %i.", linenumber);
@@ -492,9 +492,9 @@ void multiplicative_expression_opt(lexer& lex)
 
 void prefix_expression(lexer& lex)
 {
-    if (lex.curtok().type() == token_id or lex.curtok().type() == token_number or
-        lex.curtok().type() == token_number_hex or lex.curtok().type() == token_bool_true or
-        lex.curtok().type() == token_bool_false or lex.curtok().type() == token_oparen)
+    if (lex.curtok().type() == token_id || lex.curtok().type() == token_number ||
+        lex.curtok().type() == token_number_hex || lex.curtok().type() == token_bool_true ||
+        lex.curtok().type() == token_bool_false || lex.curtok().type() == token_oparen)
         postfix_expression(lex);
     else if (lex.curtok().type() == token_not)
     {
@@ -520,14 +520,14 @@ void postfix_expression_opt(lexer& lex)
         else
             throw parser_error("Expected ')'. Line %i.", linenumber);
     }
-    else if (lex.curtok().type() == token_cparen or lex.curtok().type() == token_eol or
-		lex.curtok().type() == token_comma or lex.curtok().type() == token_assign or
-        lex.curtok().type() == token_or or lex.curtok().type() == token_and or
-        lex.curtok().type() == token_equal or lex.curtok().type() == token_nequal or
-        lex.curtok().type() == token_less or lex.curtok().type() == token_greater or
-        lex.curtok().type() == token_le or lex.curtok().type() == token_ge or
-        lex.curtok().type() == token_add or lex.curtok().type() == token_subtract or
-        lex.curtok().type() == token_multiply or lex.curtok().type() == token_divide)
+    else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
+		lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
+        lex.curtok().type() == token_or || lex.curtok().type() == token_and ||
+        lex.curtok().type() == token_equal || lex.curtok().type() == token_nequal ||
+        lex.curtok().type() == token_less || lex.curtok().type() == token_greater ||
+        lex.curtok().type() == token_le || lex.curtok().type() == token_ge ||
+        lex.curtok().type() == token_add || lex.curtok().type() == token_subtract ||
+        lex.curtok().type() == token_multiply || lex.curtok().type() == token_divide)
         return;
     else
         throw parser_error("Improper expression conclusion. Line %i.", linenumber);
@@ -535,8 +535,8 @@ void postfix_expression_opt(lexer& lex)
 
 void primary_expression(lexer& lex)
 {
-    if (lex.curtok().type() == token_number or lex.curtok().type() == token_number_hex or
-        lex.curtok().type() == token_bool_true or lex.curtok().type() == token_bool_false)
+    if (lex.curtok().type() == token_number || lex.curtok().type() == token_number_hex ||
+        lex.curtok().type() == token_bool_true || lex.curtok().type() == token_bool_false)
         lex++;
     else if (lex.curtok().type() == token_id)
         lex++;
@@ -595,7 +595,7 @@ void elf_body(lexer& lex)
             throw parser_error("End line expected. Line %i.", linenumber);
         if_body(lex);
     }
-    else if (lex.curtok().type() == token_else or lex.curtok().type() == token_endif)
+    else if (lex.curtok().type() == token_else || lex.curtok().type() == token_endif)
         return;
     else
         throw parser_error("If body resolver expected. Line %i.", linenumber);
