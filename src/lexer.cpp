@@ -361,11 +361,11 @@ void lexer::_convert(vector<ptoken>& ptoks)
             else if (iter->payload == "mod")
                 t = token_mod;
             else if (iter->payload == "or")
-                t = token_boo;
+                t = token_or;
             else if (iter->payload == "and")
-                t = token_boo;
+                t = token_and;
             else if (iter->payload == "not")
-                t = token_boo;
+                t = token_not;
             else if (iter->payload == "true")
                 t = token_bool_true;
             else if (iter->payload == "false")
