@@ -72,6 +72,7 @@ namespace ramsey
         token_boo, // the typename 'boo' (meaning boolean)
         token_if, // 'if'
         token_elf, // 'elf' (meaning else if)
+        token_else, // 'else'
         token_endif, // 'endif'
         token_while, // 'while'
         token_smash, // 'smash'
@@ -121,17 +122,10 @@ namespace ramsey
     };
     
     // the lexer class, reads the file and creates a stream of tokens
-    /*
-      (trying to follow your conventions as much as I can)
-      this is just a starting point, it will certainly need more functions
-    */
     class lexer
     {
     public:
         lexer(const char* file);
-        void read(/*file*/);    //read in the file (or perhaps we do that on construction?)
-        void tokenize();        //convert the char stream into a token stream / throw errors
-
         // provide means to access tokens
         const token& curtok() const
         { return *_iter; }
@@ -140,8 +134,6 @@ namespace ramsey
         lexer& operator ++();
         lexer operator ++(int);
     private:
-        //perhaps a list instead? we'll discuss at some point.
-        //however, I do feel we ought to use stl where we can
         std::vector<token> _stream;
         std::vector<token>::const_iterator _iter;
         std::string _input;

@@ -197,27 +197,6 @@ lexer::lexer(const char* file)
     // set iterator at beginning
     _iter = _stream.begin();
 }
-//initial guess at how we might do this.
-void lexer::tokenize()
-{
-    size_t x = 0;
-    while (x < _input.length())
-    {
-        if (_input[x] == ' ')
-        {
-            x++;
-            continue;
-        }
-        // handle comments
-        if (_input[x] == '#')
-        {
-            while (_input[x+1] != '\n')
-                x++;
-            continue;
-        }
-        // handle (everything else)
-    }
-}
 lexer& lexer::operator ++()
 {
     ++_iter;
@@ -357,6 +336,8 @@ void lexer::_convert(vector<ptoken>& ptoks)
                 t = token_if;
             else if (iter->payload == "elf")
                 t = token_elf;
+			else if (iter->payload == "else")
+				t = token_else;
             else if (iter->payload == "endif")
                 t = token_endif;
             else if (iter->payload == "while")
