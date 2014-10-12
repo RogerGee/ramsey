@@ -336,8 +336,8 @@ void lexer::_convert(vector<ptoken>& ptoks)
                 t = token_if;
             else if (iter->payload == "elf")
                 t = token_elf;
-			else if (iter->payload == "else")
-				t = token_else;
+            else if (iter->payload == "else")
+                t = token_else;
             else if (iter->payload == "endif")
                 t = token_endif;
             else if (iter->payload == "while")

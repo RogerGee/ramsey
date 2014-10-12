@@ -26,13 +26,13 @@ int main(int argc,const char* argv[])
         cerr << argv[0] << ": error: " << ex.what() << endl;
         return 1;
     }
-	try {
-		parser parse(argv[1]);
-		
-		cout << "parsed successfully\n";
-	}
-	catch (parser_error ex) {
-		cerr << argv[0] << ": error: " << ex.what() << endl;
-		return 1;
-	}
+    try {
+        parser parse(argv[1]);
+        
+        cout << "parsed successfully\n";
+    }
+    catch (parser_error ex) {
+        cerr << argv[0] << ": error: " << ex.what() << endl;
+        return 1;
+    }
 }
