@@ -2,6 +2,7 @@
    that tests some feature of the Ramsey compiler; try to build with
    RAMSEY_DEBUG macro defined */
 #include "lexer.h"
+#include "parser.h"
 #include <iostream>
 using namespace std;
 using namespace ramsey;
@@ -25,4 +26,13 @@ int main(int argc,const char* argv[])
         cerr << argv[0] << ": error: " << ex.what() << endl;
         return 1;
     }
+	try {
+		parser parse(argv[1]);
+		
+		cout << "parsed successfully\n";
+	}
+	catch (parser_error ex) {
+		cerr << argv[0] << ": error: " << ex.what() << endl;
+		return 1;
+	}
 }

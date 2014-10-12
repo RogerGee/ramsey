@@ -1,9 +1,9 @@
-fun myfun as boo
+fun myfun() as boo
     in i
     i <- 5
-    if i<-5
+    if (i<-5)
         toss i
-    elf i <--5
+    elf (i <--5)
         toss -1*i
     endif
 
