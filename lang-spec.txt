@@ -116,8 +116,8 @@ lexical conventions defined in the previous section (B)
         <function-list>                   --allow functions at file level
 
 <function-list>        
-		<function> <function-list>
-		""
+        <function> <function-list>
+        ""
 
 <function>:
         <function-declaration> <statement-list> "endfun" [newline]
@@ -257,7 +257,7 @@ lexical conventions defined in the previous section (B)
 
 <elf-body>
         "elf" "(" <condition> ")" [newline] <if-body>
-		""
+        ""
 
 <if-concluder>:
         "endif" [newline]
