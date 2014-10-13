@@ -33,9 +33,10 @@ endif
 # header file dependencies
 ALL_HEADER_FILES = lexer.h
 LEXER_H = lexer.h
+PARSER_H = parser.h $(LEXER_H)
 
 # object code files
-OBJECTS = lexer.o
+OBJECTS = lexer.o parser.o
 # add optional object code files depending on configuration
 ifeq ($(MAKECMDGOALS),test)
 OBJECTS := $(OBJECTS) test.o
@@ -54,6 +55,8 @@ $(PROGRAM): $(OBJECTS)
 # build program modules
 $(OBJDIR)/lexer.o: lexer.cpp $(LEXER_H)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/lexer.o lexer.cpp
+$(OBJDIR)/parser.o: parser.cpp $(PARSER_H)
+	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/parser.o parser.cpp
 $(OBJDIR)/test.o: test.cpp $(ALL_HEADER_FILES)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/test.o test.cpp
 

@@ -73,7 +73,6 @@ token& token::operator =(const token& obj)
     }
     return *this;
 }
-#ifdef RAMSEY_DEBUG
 const char* token::to_string_kind() const
 {
     switch (_tkind) {
@@ -131,6 +130,8 @@ const char* token::to_string_kind() const
         return "token_if";
     case token_elf:
         return "token_elf";
+    case token_else:
+        return "token_else";
     case token_endif:
         return "token_endif";
     case token_while:
@@ -174,7 +175,6 @@ string token::to_string() const
     }
     return result;
 }
-#endif
 void token::_alloc(const char* source,int length)
 {
     int i;
@@ -186,7 +186,7 @@ void token::_alloc(const char* source,int length)
     _tsource[i] = 0;
 }
 
-// lexer
+// ramsey::lexer
 lexer::lexer(const char* file)
 {
     vector<ptoken> ptoks;

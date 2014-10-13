@@ -38,9 +38,61 @@ namespace ramsey
     {
     public:
         parser(const char* file);
+
+        int sloc() const
+        { return linenumber; }
     private:
+        int linenumber;
         lexer lex;
+
         //parse tree representation
+
+        // helper functions for parser
+        bool eol();
+
+        // declare recursive-descent functions
+        void program();
+        void function_list();
+        void function();
+        void function_declaration();
+        void function_type_specifier();
+        void parameter_declaration();
+        void parameter();
+        void parameter_list();
+        void statement();
+        void statement_list();
+        void declaration_statement();
+        void type_name();
+        void initializer();
+        void assignment_operator();
+        void expression_statement();
+        void expression();
+        void expression_list();
+        void expression_list_item();
+        void assignment_expression();
+        void assignment_expression_opt();
+        void logical_or_expression();
+        void logical_or_expression_opt();
+        void logical_and_expression();
+        void logical_and_expression_opt();
+        void equality_expression();
+        void equality_expression_opt();
+        void relational_expression();
+        void relational_expression_opt();
+        void additive_expression();
+        void additive_expression_opt();
+        void multiplicative_expression();
+        void multiplicative_expression_opt();
+        void prefix_expression();
+        void postfix_expression();
+        void postfix_expression_opt();
+        void primary_expression();
+        void selection_statement();
+        void if_body();
+        void elf_body();
+        void if_concluder();
+        void iterative_statement();
+        void jump_statement();
     };
     
 }

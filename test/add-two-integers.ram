@@ -5,7 +5,7 @@ fun add(in a, in b) as in
     toss a + b
 endfun
 
-fun program(a,b)
+fun program(in a,in b)
     in a
     in b
 

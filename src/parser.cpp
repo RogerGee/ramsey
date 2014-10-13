@@ -8,8 +8,6 @@
 using namespace std;
 using namespace ramsey;
 
-int linenumber = 1;
-
 // exception types
 parser_error::parser_error(const char* format, ...)
 {
@@ -32,62 +30,21 @@ parser_exception::parser_exception(const char* format, ...)
     _cstor(buffer);
 }
 
-// declare recursive functions
-void program(lexer& lex);
-void function_list(lexer& lex);
-void function(lexer& lex);
-void function_declaration(lexer& lex);
-void function_type_specifier(lexer& lex);
-void parameter_declaration(lexer& lex);
-void parameter(lexer& lex);
-void parameter_list(lexer& lex);
-void statement(lexer& lex);
-void statement_list(lexer& lex);
-void declaration_statement(lexer& lex);
-void type_name(lexer& lex);
-void initializer(lexer& lex);
-void assignment_operator(lexer& lex);
-void expression_statement(lexer& lex);
-void expression(lexer& lex);
-void expression_list(lexer& lex);
-void expression_list_item(lexer& lex);
-void assignment_expression(lexer& lex);
-void assignment_expression_opt(lexer& lex);
-void logical_or_expression(lexer& lex);
-void logical_or_expression_opt(lexer& lex);
-void logical_and_expression(lexer& lex);
-void logical_and_expression_opt(lexer& lex);
-void equality_expression(lexer& lex);
-void equality_expression_opt(lexer& lex);
-void relational_expression(lexer& lex);
-void relational_expression_opt(lexer& lex);
-void additive_expression(lexer& lex);
-void additive_expression_opt(lexer& lex);
-void multiplicative_expression(lexer& lex);
-void multiplicative_expression_opt(lexer& lex);
-void prefix_expression(lexer& lex);
-void postfix_expression(lexer& lex);
-void postfix_expression_opt(lexer& lex);
-void primary_expression(lexer& lex);
-void selection_statement(lexer& lex);
-void if_body(lexer& lex);
-void elf_body(lexer& lex);
-void if_concluder(lexer& lex);
-void iterative_statement(lexer& lex);
-void jump_statement(lexer& lex);
+// ramsey::parser
 
-parser::parser(const char* file) : lex(file)
+parser::parser(const char* file)
+    : linenumber(1), lex(file)
 {
-    program(lex);
+    program();
 }
 
-bool eol(lexer& lex)    // eat all endlines and return whether there were any
+bool parser::eol()    // eat all endlines and return whether there were any
 {
     bool ans = false;
     while (!lex.endtok() && lex.curtok().type() == token_eol)
     {
         ans = true;
-        lex++;
+        ++lex;
         linenumber++;
     }
     return ans;
@@ -95,128 +52,128 @@ bool eol(lexer& lex)    // eat all endlines and return whether there were any
 
 // recursive call definitions
 
-void program(lexer& lex)
+void parser::program()
 {
-    function_list(lex);
+    function_list();
 }
 
-void function_list(lexer& lex)
+void parser::function_list()
 {
-    eol(lex);
+    eol();
     if (lex.endtok())
         return;
     else if (lex.curtok().type() == token_fun)
     {
-        function(lex);
-        function_list(lex);
+        function();
+        function_list();
     }
     else
-        throw parser_error("Stray code outside function body. Line %i.", linenumber);
+        throw parser_error("line %d: stray %s outside function body", linenumber, lex.curtok().to_string().c_str());
 }
 
-void function(lexer& lex)
+void parser::function()
 {
-    function_declaration(lex);
-    statement_list(lex);
+    function_declaration();
+    statement_list();
     if (lex.curtok().type() == token_endfun)
-        lex++;
+        ++lex;
     else
-        throw parser_error("Endfun expected. Line %i.", linenumber);
-    if (!eol(lex))
-        throw parser_error("End line expected. Line %i", linenumber);
+        throw parser_error("line %d: expected 'endfun' after function body", linenumber);
+    if (!eol())
+        throw parser_error("line %d: expected newline after function", linenumber);
 }
 
-void function_declaration(lexer& lex)
+void parser::function_declaration()
 {
-    lex++;
+    ++lex;
     if (lex.curtok().type() == token_id)
-        lex++;
+        ++lex;
     else
-        throw parser_error("Identifier expected. Line %i.", linenumber);
+        throw parser_error("line %d: expected identifier in function declaration", linenumber);
     if (lex.curtok().type() == token_oparen)
-        lex++;
+        ++lex;
     else
-        throw parser_error("Expected '('. Line %i.", linenumber);
-    parameter_declaration(lex);
+        throw parser_error("line %d: expected '(' after function name", linenumber);
+    parameter_declaration();
     if (lex.curtok().type() == token_cparen)
-        lex++;
+        ++lex;
     else
-        throw parser_error("Expected ')'. Line %i.", linenumber);
-    function_type_specifier(lex);
-    if (!eol(lex))
-        throw parser_error("End line expected. Line %i.", linenumber);
+        throw parser_error("line %d: expected ')' after function declaration", linenumber);
+    function_type_specifier();
+    if (!eol())
+        throw parser_error("line %d: expected newline after function declaration", linenumber);
 }
 
-void function_type_specifier(lexer& lex)
+void parser::function_type_specifier()
 {
     if (lex.curtok().type() == token_as)
     {
-        lex++;
-        type_name(lex);
+        ++lex;
+        type_name();
     }
     else if (lex.curtok().type() == token_eol)
         return;
     else
-        throw parser_error("Improperly formatted type specifier. Line %i.", linenumber);
+        throw parser_error("line %d: bad function type specifier", linenumber);
 }
 
-void parameter_declaration(lexer& lex)
+void parser::parameter_declaration()
 {
     if (lex.curtok().type() == token_in || lex.curtok().type() == token_boo)
     {
-        parameter(lex);
-        parameter_list(lex);
+        parameter();
+        parameter_list();
     }
     else if (lex.curtok().type() == token_cparen)
         return;
     else
-        throw parser_error("Improperly formatted parameter declaration. Line %i.", linenumber);
+        throw parser_error("line %d: bad parameter declaration", linenumber);
 }
 
-void parameter(lexer& lex)
+void parser::parameter()
 {
-    type_name(lex);
+    type_name();
     if (lex.curtok().type() == token_id)
-        lex++;
+        ++lex;
     else
-        throw parser_error("Missing parameter name. Line %i.", linenumber);
+        throw parser_error("line %d: missing parameter name", linenumber);
 }
 
-void parameter_list(lexer& lex)
+void parser::parameter_list()
 {
     if (lex.curtok().type() == token_comma)
     {
-        lex++;
-        parameter(lex);
-        parameter_list(lex);
+        ++lex;
+        parameter();
+        parameter_list();
     }
     else if (lex.curtok().type() == token_cparen)
         return;
     else
-        throw parser_error("Unexpected token in parameter list. Line %i.", linenumber);
+        throw parser_error("line %d: unexpected token in parameter list '%s'", linenumber, lex.curtok().source_string());
 }
 
-void statement(lexer& lex)
+void parser::statement()
 {
     if (lex.curtok().type() == token_in || lex.curtok().type() == token_boo)
-        declaration_statement(lex);
+        declaration_statement();
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_not
         || lex.curtok().type() == token_id || lex.curtok().type() == token_bool_true
         || lex.curtok().type() == token_bool_false || lex.curtok().type() == token_number
         || lex.curtok().type() == token_number_hex || lex.curtok().type() == token_string
         || lex.curtok().type() == token_oparen)
-        expression_statement(lex);
+        expression_statement();
     else if (lex.curtok().type() == token_if)
-        selection_statement(lex);
+        selection_statement();
     else if (lex.curtok().type() == token_while)
-        iterative_statement(lex);
+        iterative_statement();
     else if (lex.curtok().type() == token_toss || lex.curtok().type() == token_smash)
-        jump_statement(lex);
+        jump_statement();
     else
-        throw parser_error("Incorrect statement start. Line %i.", linenumber);
+        throw parser_error("line %d: malformed statement", linenumber);
 }
 
-void statement_list(lexer& lex)
+void parser::statement_list()
 {
     if (lex.curtok().type() == token_in || lex.curtok().type() == token_boo ||
         lex.curtok().type() == token_id || lex.curtok().type() == token_number ||
@@ -226,204 +183,206 @@ void statement_list(lexer& lex)
         lex.curtok().type() == token_while || lex.curtok().type() == token_toss ||
         lex.curtok().type() == token_smash)
     {
-        statement(lex);
-        statement_list(lex);
+        statement();
+        statement_list();
     }
     else if (lex.curtok().type() == token_else || lex.curtok().type() == token_elf ||
         lex.curtok().type() == token_endif || lex.curtok().type() == token_endfun ||
         lex.curtok().type() == token_endwhile)
         return;
     else
-        throw parser_error("Incorrect statement end. Line %i.", linenumber);
+        throw parser_error("line %d: expected end-construct after statement", linenumber);
 }
 
-void declaration_statement(lexer& lex)
+void parser::declaration_statement()
 {
-    type_name(lex);
+    type_name();
     if (lex.curtok().type() == token_id)
-        lex++;
+        ++lex;
     else
-        throw parser_error("Identifier expected. Line %i.", linenumber);
-    initializer(lex);
-    if (!eol(lex))
-        throw parser_error("End line expected. Line %i.", linenumber);
+        throw parser_error("line %d: expected identifier in declaration statement", linenumber);
+    initializer();
+    if (!eol())
+        throw parser_error("line %d: newline expected after declaration statement", linenumber);
 }
 
-void type_name(lexer& lex)
+void parser::type_name()
 {
     if (lex.curtok().type() == token_in)
-        lex++;
+        ++lex;
     else if (lex.curtok().type() == token_boo)
-        lex++;
+        ++lex;
     else
-        throw parser_error("Typename specifier expected. Line %i.", linenumber);
+        throw parser_error("line %d: expected typename specifier", linenumber);
 }
 
-void initializer(lexer& lex)
+void parser::initializer()
 {
     if (lex.curtok().type() == token_assign)
     {
-        assignment_operator(lex);
-        expression(lex);
+        assignment_operator();
+        expression();
     }
     else if (lex.curtok().type() == token_eol)
         return;
     else
-        throw parser_error("Improperly formatted initializer. Line %i.", linenumber);
+        throw parser_error("line %d: malformed initializer", linenumber);
 }
 
-void assignment_operator(lexer& lex)
+void parser::assignment_operator()
 {
     if (lex.curtok().type() == token_assign)
-        lex++;
-    // others would go here, if we so decide to implement them
+        ++lex;
+    else
+        throw parser_error("line %d: expected assignment operator in expression",linenumber);
+    // others would go here, if we decide to implement them
 }
 
-void expression_statement(lexer& lex)
+void parser::expression_statement()
 {
-    expression_list(lex);
-    if (!eol(lex))
-        throw parser_error("End line expected. Line %i.", linenumber);
+    expression_list();
+    if (!eol())
+        throw parser_error("line %d: expected newline after expression statement", linenumber);
 }
 
-void expression(lexer& lex)
+void parser::expression()
 {
-    assignment_expression(lex);
+    assignment_expression();
 }
 
-void expression_list(lexer& lex)
+void parser::expression_list()
 {
-    expression(lex);
-    expression_list_item(lex);
+    expression();
+    expression_list_item();
 }
 
-void expression_list_item(lexer& lex)
+void parser::expression_list_item()
 {
     if (lex.curtok().type() == token_comma)
     {
-        lex++;
-        expression_list(lex);
+        ++lex;
+        expression_list();
     }
     else if (lex.curtok().type() == token_eol || lex.curtok().type() == token_cparen)
         return;
     else
-        throw parser_error("improperly formatted expression. Line %i.", linenumber);
+        throw parser_error("line %d: malformed expression", linenumber);
 }
 
-void assignment_expression(lexer& lex)
+void parser::assignment_expression()
 {
-    logical_or_expression(lex);
-    assignment_expression_opt(lex);
+    logical_or_expression();
+    assignment_expression_opt();
 }
 
-void assignment_expression_opt(lexer& lex)
+void parser::assignment_expression_opt()
 {
     if (lex.curtok().type() == token_assign)
     {
-        assignment_operator(lex);
-        assignment_expression(lex);
+        assignment_operator();
+        assignment_expression();
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
         lex.curtok().type() == token_comma)
         return;
     else
-        throw parser_error("Improper expression conclusion. Line %i.", linenumber);
+        throw parser_error("line %d: malformed expression", linenumber);
 }
 
-void logical_or_expression(lexer& lex)
+void parser::logical_or_expression()
 {
-    logical_and_expression(lex);
-    logical_or_expression_opt(lex);
+    logical_and_expression();
+    logical_or_expression_opt();
 }
 
-void logical_or_expression_opt(lexer& lex)
+void parser::logical_or_expression_opt()
 {
     if (lex.curtok().type() == token_or)
     {
-        lex++;
-        logical_or_expression(lex);
+        ++lex;
+        logical_or_expression();
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
         lex.curtok().type() == token_comma || lex.curtok().type() == token_assign)
         return;
     else
-        throw parser_error("Improper expression conclusion. Line %i.", linenumber);
+        throw parser_error("line %d: malformed expression", linenumber);
 }
 
-void logical_and_expression(lexer& lex)
+void parser::logical_and_expression()
 {
-    equality_expression(lex);
-    logical_and_expression_opt(lex);
+    equality_expression();
+    logical_and_expression_opt();
 }
 
-void logical_and_expression_opt(lexer& lex)
+void parser::logical_and_expression_opt()
 {
     if (lex.curtok().type() == token_and)
     {
-        lex++;
-        logical_and_expression(lex);
+        ++lex;
+        logical_and_expression();
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
         lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
         lex.curtok().type() == token_or)
         return;
     else
-        throw parser_error("Improper expression conclusion. Line %i.", linenumber);
+        throw parser_error("line %d: malformed expression", linenumber);
 }
 
-void equality_expression(lexer& lex)
+void parser::equality_expression()
 {
-    relational_expression(lex);
-    equality_expression_opt(lex);
+    relational_expression();
+    equality_expression_opt();
 }
 
-void equality_expression_opt(lexer& lex)
+void parser::equality_expression_opt()
 {
     if (lex.curtok().type() == token_equal)
     {
-        lex++;
-        equality_expression(lex);
+        ++lex;
+        equality_expression();
     }
     else if (lex.curtok().type() == token_nequal)
     {
-        lex++;
-        equality_expression(lex);
+        ++lex;
+        equality_expression();
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
         lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
         lex.curtok().type() == token_or || lex.curtok().type() == token_and)
         return;
     else
-        throw parser_error("Improper expression conclusion. Line %i.", linenumber);
+        throw parser_error("line %d: malformed expression", linenumber);
 }
 
-void relational_expression(lexer& lex)
+void parser::relational_expression()
 {
-    additive_expression(lex);
-    relational_expression_opt(lex);
+    additive_expression();
+    relational_expression_opt();
 }
 
-void relational_expression_opt(lexer& lex)
+void parser::relational_expression_opt()
 {
     if (lex.curtok().type() == token_less)
     {
-        lex++;
-        relational_expression(lex);
+        ++lex;
+        relational_expression();
     }
     else if (lex.curtok().type() == token_greater)
     {
-        lex++;
-        relational_expression(lex);
+        ++lex;
+        relational_expression();
     }
     else if (lex.curtok().type() == token_le)
     {
-        lex++;
-        relational_expression(lex);
+        ++lex;
+        relational_expression();
     }
     else if (lex.curtok().type() == token_ge)
     {
-        lex++;
-        relational_expression(lex);
+        ++lex;
+        relational_expression();
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
         lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
@@ -431,26 +390,26 @@ void relational_expression_opt(lexer& lex)
         lex.curtok().type() == token_equal || lex.curtok().type() == token_nequal)
         return;
     else
-        throw parser_error("Improper expression conclusion. Line %i.", linenumber);
+        throw parser_error("line %d: malformed expression", linenumber);
 }
 
-void additive_expression(lexer& lex)
+void parser::additive_expression()
 {
-    multiplicative_expression(lex);
-    additive_expression_opt(lex);
+    multiplicative_expression();
+    additive_expression_opt();
 }
 
-void additive_expression_opt(lexer& lex)
+void parser::additive_expression_opt()
 {
     if (lex.curtok().type() == token_add)
     {
-        lex++;
-        additive_expression(lex);
+        ++lex;
+        additive_expression();
     }
     else if (lex.curtok().type() == token_subtract)
     {
-        lex++;
-        additive_expression(lex);
+        ++lex;
+        additive_expression();
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
         lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
@@ -460,31 +419,31 @@ void additive_expression_opt(lexer& lex)
         lex.curtok().type() == token_le || lex.curtok().type() == token_ge)
         return;
     else
-        throw parser_error("Improper expression conclusion. Line %i.", linenumber);
+        throw parser_error("line %d: malformed expression", linenumber);
 }
 
-void multiplicative_expression(lexer& lex)
+void parser::multiplicative_expression()
 {
-    prefix_expression(lex);
-    multiplicative_expression_opt(lex);
+    prefix_expression();
+    multiplicative_expression_opt();
 }
 
-void multiplicative_expression_opt(lexer& lex)
+void parser::multiplicative_expression_opt()
 {
     if (lex.curtok().type() == token_multiply)
     {
-        lex++;
-        multiplicative_expression(lex);
+        ++lex;
+        multiplicative_expression();
     }
     else if (lex.curtok().type() == token_divide)
     {
-        lex++;
-        multiplicative_expression(lex);
+        ++lex;
+        multiplicative_expression();
     }
     else if (lex.curtok().type() == token_mod)
     {
-        lex++;
-        multiplicative_expression(lex);
+        ++lex;
+        multiplicative_expression();
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
         lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
@@ -495,38 +454,38 @@ void multiplicative_expression_opt(lexer& lex)
         lex.curtok().type() == token_add || lex.curtok().type() == token_subtract)
         return;
     else
-        throw parser_error("Improper expression conclusion. Line %i.", linenumber);
+        throw parser_error("line %d: malformed expression", linenumber);
 }
 
-void prefix_expression(lexer& lex)
+void parser::prefix_expression()
 {
     if (lex.curtok().type() == token_id || lex.curtok().type() == token_number ||
         lex.curtok().type() == token_number_hex || lex.curtok().type() == token_bool_true ||
         lex.curtok().type() == token_bool_false || lex.curtok().type() == token_oparen)
-        postfix_expression(lex);
+        postfix_expression();
     else if (lex.curtok().type() == token_not)
     {
-        lex++;
-        prefix_expression(lex);
+        ++lex;
+        prefix_expression();
     }
 }
 
-void postfix_expression(lexer& lex)
+void parser::postfix_expression()
 {
-    primary_expression(lex);
-    postfix_expression_opt(lex);
+    primary_expression();
+    postfix_expression_opt();
 }
 
-void postfix_expression_opt(lexer& lex)
+void parser::postfix_expression_opt()
 {
     if (lex.curtok().type() == token_oparen)
     {
-        lex++;
-        expression_list(lex);
+        ++lex;
+        expression_list();
         if (lex.curtok().type() == token_cparen)
-            lex++;
+            ++lex;
         else
-            throw parser_error("Expected ')'. Line %i.", linenumber);
+            throw parser_error("line %d: expected ')' in function call", linenumber);
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
         lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
@@ -539,139 +498,140 @@ void postfix_expression_opt(lexer& lex)
         lex.curtok().type() == token_mod)
         return;
     else
-        throw parser_error("Improper expression conclusion. Line %i.", linenumber);
+        throw parser_error("line %d: malformed expression", linenumber);
 }
 
-void primary_expression(lexer& lex)
+void parser::primary_expression()
 {
     if (lex.curtok().type() == token_number || lex.curtok().type() == token_number_hex ||
         lex.curtok().type() == token_bool_true || lex.curtok().type() == token_bool_false)
-        lex++;
+        ++lex;
     else if (lex.curtok().type() == token_id)
-        lex++;
+        ++lex;
     else if (lex.curtok().type() == token_oparen)
     {
-        lex++;
-        expression(lex);
+        ++lex;
+        expression();
         if (lex.curtok().type() == token_cparen)
-            lex++;
+            ++lex;
         else
-            throw parser_error("Expected ')'. Line %i.", linenumber);
+            throw parser_error("line %d: expected ')' in primary expression", linenumber);
     }
     else
-        throw parser_error("Not an expression. Line %i.", linenumber);
+        throw parser_error("line %d: expected primary-id", linenumber);
 }
 
-void selection_statement(lexer& lex)
+void parser::selection_statement()
 {
-    lex++;
+    ++lex;
     if (lex.curtok().type() == token_oparen)
-        lex++;
+        ++lex;
     else
-        throw parser_error("Expected '('. Line %i.", linenumber);
-    expression(lex);
+        throw parser_error("line %d: '(' must follow 'if'", linenumber);
+    expression();
     if (lex.curtok().type() == token_cparen)
-        lex++;
+        ++lex;
     else
-        throw parser_error("Expected ')'. Line %i.", linenumber);
-    if (!eol(lex))
-        throw parser_error("End line expected. Line %i.", linenumber);
-    if_body(lex);
-    if_concluder(lex);
+        throw parser_error("line %d: expected ')' after if-statement condition", linenumber);
+    if (!eol())
+        throw parser_error("line %d: expected newline after if-statement condition", linenumber);
+    if_body();
+    if_concluder();
 }
 
-void if_body(lexer& lex)
+void parser::if_body()
 {
-    statement_list(lex);
-    elf_body(lex);
+    statement_list();
+    elf_body();
 }
 
-void elf_body(lexer& lex)
+void parser::elf_body()
 {
     if (lex.curtok().type() == token_elf)
     {
-        lex++;
+        ++lex;
         if (lex.curtok().type() == token_oparen)
-            lex++;
+            ++lex;
         else
-            throw parser_error("Expected '('. Line %i.", linenumber);
-        expression(lex);
+            throw parser_error("line %d: expected '(' after 'elf'", linenumber);
+        expression();
         if (lex.curtok().type() == token_cparen)
-            lex++;
+            ++lex;
         else
-            throw parser_error("Expected ')'. Line %i.", linenumber);
-        if (!eol(lex))
-            throw parser_error("End line expected. Line %i.", linenumber);
-        if_body(lex);
+            throw parser_error("line %d: expected ')' after elf-statement condition", linenumber);
+        if (!eol())
+            throw parser_error("line %d: expected newline after elf-statement condition", linenumber);
+        if_body();
     }
     else if (lex.curtok().type() == token_else || lex.curtok().type() == token_endif)
         return;
     else
-        throw parser_error("If body resolver expected. Line %i.", linenumber);
+        throw parser_error("line %d: expected 'elf', 'else' or 'endif' after if-statement body", linenumber);
 }
 
-void if_concluder(lexer& lex)
+void parser::if_concluder()
 {
     if (lex.curtok().type() == token_endif)
     {
-        lex++;
-        if (!eol(lex))
-            throw parser_error("End line expected. Line %i.", linenumber);
+        ++lex;
+        if (!eol())
+            throw parser_error("line %d: expected newline after 'endif'", linenumber);
     }
     else if (lex.curtok().type() == token_else)
     {
-        lex++;
-        statement_list(lex);
+        ++lex;
+        statement_list();
         if (lex.curtok().type() == token_endif)
-            lex++;
+            ++lex;
         else
-            throw parser_error("Endif expected. Line %i.", linenumber);
-        if (!eol(lex))
-            throw parser_error("End line expected. Line %i.", linenumber);
+            throw parser_error("line %d: expected 'endif' after else block", linenumber);
+        if (!eol())
+            throw parser_error("line %d: expected newline after 'endif'", linenumber);
     }
     else
-        throw parser_error("If body concluder expected. Line %i.", linenumber);
+        throw parser_error("line %d: expected 'else' or 'endif'", linenumber);
 }
 
-void iterative_statement(lexer& lex)
+void parser::iterative_statement()
 {
-    lex++;
+    ++lex;
     if (lex.curtok().type() == token_oparen)
-        lex++;
+        ++lex;
     else
-        throw parser_error("Expected '('. Line %i.", linenumber);
-    expression(lex);
+        throw parser_error("line %d: expected '(' after iterative", linenumber);
+    expression();
     if (lex.curtok().type() == token_cparen)
-        lex++;
+        ++lex;
     else
-        throw parser_error("Expected ')'. Line %i.", linenumber);
-    if (!eol(lex))
-        throw parser_error("End line expected. Line %i.", linenumber);
-    statement_list(lex);
+        throw parser_error("line %d: expected ')' after iterative condition", linenumber);
+    if (!eol())
+        throw parser_error("line %d: expected newline after iterative condition", linenumber);
+    statement_list();
     if (lex.curtok().type() == token_endwhile)
-        lex++;
+        ++lex;
     else
-        throw parser_error("Endwhile expected. Line %i.", linenumber);
-    if (!eol(lex))
-        throw parser_error("End line expected. Line %i.", linenumber);
+        throw parser_error("line %d: expected 'endwhile'", linenumber);
+    if (!eol())
+        throw parser_error("line %d: expected newline after 'endwhile'", linenumber);
 }
 
-void jump_statement(lexer& lex)
+void parser::jump_statement()
 {
     if (lex.curtok().type() == token_toss)
     {
-        lex++;
-        expression_list(lex);
-        if (!eol(lex))
-            throw parser_error("End line expected. Line %i.", linenumber);
+        ++lex;
+        expression_list();
+        if (!eol())
+            throw parser_error("line %d: expected newline after 'toss'", linenumber);
     }
     else if (lex.curtok().type() == token_smash)
     {
-        lex++;
-        if (!eol(lex))
-            throw parser_error("End Line expected. Line %i.", linenumber);
+        ++lex;
+        if (!eol())
+            throw parser_error("line %d: expected newline after 'smash'", linenumber);
     }
+    // this shouldn't run since where jump-statement is called
+    // we check curtok==token_smash || curtok==token_toss
     else
-        throw parser_error("Incorrect jump statement. Line %i.", linenumber);
+        throw parser_error("line %d: malformed jump statement", linenumber);
 }
-

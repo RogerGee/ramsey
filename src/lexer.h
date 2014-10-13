@@ -109,11 +109,9 @@ namespace ramsey
         const char* source_string() const
         { return _tsource; }
 
-#ifdef RAMSEY_DEBUG
         // get human-readable strings describing the token (for testing)
         const char* to_string_kind() const; // just the kind
         std::string to_string() const; // kind plus any payload
-#endif
     private:
         token_t _tkind;
         char* _tsource;
