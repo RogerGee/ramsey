@@ -1,0 +1,8 @@
+# errors.ram
+# file for testing error messages
+# break things here!
+
+fun myfun(in hi,) as boo
+    in lol <- <- hi
+	toss toss toss
+endfun
