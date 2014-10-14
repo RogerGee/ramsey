@@ -150,7 +150,16 @@ void parser::parameter_list()
     else if (lex.curtok().type() == token_cparen)
         return;
     else
-        throw parser_error("line %d: unexpected token in parameter list '%s'", linenumber, lex.curtok().to_string().c_str());
+    {
+        // next token is an identifier, user needs comma
+        if (lex.curtok().type() == token_in or lex.curtok().type() == token_boo)
+            throw parser_error("line %d: expected ',' in parameter list", linenumber);
+        // next token indicates end of parameters, user needs cparen
+        else if (lex.curtok().type() == token_as or lex.curtok().type() == token_eol)
+            throw parser_error("line %d: expected ')' after parameter list", linenumber);
+        else
+            throw parser_error("line %d: unexpected token in parameter list '%s'", linenumber, lex.curtok().to_string().c_str());
+    }
 }
 
 void parser::statement()
@@ -247,7 +256,13 @@ void parser::expression_statement()
 
 void parser::expression()
 {
-    assignment_expression();
+    if (lex.curtok().type() == token_id || lex.curtok().type() == token_number ||
+        lex.curtok().type() == token_number_hex || lex.curtok().type() == token_bool_true ||
+        lex.curtok().type() == token_bool_false || lex.curtok().type() == token_oparen ||
+        lex.curtok().type() == token_not)
+        assignment_expression();
+    else
+        throw parser_error("line %d: unexpected token in expression '%s'", linenumber, lex.curtok().to_string().c_str());
 }
 
 void parser::expression_list()
@@ -286,7 +301,7 @@ void parser::assignment_expression_opt()
         lex.curtok().type() == token_comma)
         return;
     else
-        throw parser_error("line %d: malformed expression", linenumber);
+        throw parser_error("line %d: unexpected token in expression '%s'", linenumber, lex.curtok().to_string().c_str());
 }
 
 void parser::logical_or_expression()
@@ -306,7 +321,7 @@ void parser::logical_or_expression_opt()
         lex.curtok().type() == token_comma || lex.curtok().type() == token_assign)
         return;
     else
-        throw parser_error("line %d: malformed expression", linenumber);
+        throw parser_error("line %d: unexpected token in expression '%s'", linenumber, lex.curtok().to_string().c_str());
 }
 
 void parser::logical_and_expression()
@@ -327,7 +342,7 @@ void parser::logical_and_expression_opt()
         lex.curtok().type() == token_or)
         return;
     else
-        throw parser_error("line %d: malformed expression", linenumber);
+        throw parser_error("line %d: unexpected token in expression '%s'", linenumber, lex.curtok().to_string().c_str());
 }
 
 void parser::equality_expression()
@@ -353,7 +368,7 @@ void parser::equality_expression_opt()
         lex.curtok().type() == token_or || lex.curtok().type() == token_and)
         return;
     else
-        throw parser_error("line %d: malformed expression", linenumber);
+        throw parser_error("line %d: unexpected token in expression '%s'", linenumber, lex.curtok().to_string().c_str());
 }
 
 void parser::relational_expression()
@@ -390,7 +405,7 @@ void parser::relational_expression_opt()
         lex.curtok().type() == token_equal || lex.curtok().type() == token_nequal)
         return;
     else
-        throw parser_error("line %d: malformed expression", linenumber);
+        throw parser_error("line %d: unexpected token in expression '%s'", linenumber, lex.curtok().to_string().c_str());
 }
 
 void parser::additive_expression()
@@ -419,7 +434,7 @@ void parser::additive_expression_opt()
         lex.curtok().type() == token_le || lex.curtok().type() == token_ge)
         return;
     else
-        throw parser_error("line %d: malformed expression", linenumber);
+        throw parser_error("line %d: unexpected token in expression '%s'", linenumber, lex.curtok().to_string().c_str());
 }
 
 void parser::multiplicative_expression()
@@ -454,7 +469,7 @@ void parser::multiplicative_expression_opt()
         lex.curtok().type() == token_add || lex.curtok().type() == token_subtract)
         return;
     else
-        throw parser_error("line %d: malformed expression", linenumber);
+        throw parser_error("line %d: unexpected token in expression '%s'", linenumber, lex.curtok().to_string().c_str());
 }
 
 void parser::prefix_expression()
@@ -498,7 +513,7 @@ void parser::postfix_expression_opt()
         lex.curtok().type() == token_mod)
         return;
     else
-        throw parser_error("line %d: malformed expression", linenumber);
+        throw parser_error("line %d: unexpected token in expression '%s'", linenumber, lex.curtok().to_string().c_str());
 }
 
 void parser::primary_expression()
@@ -518,7 +533,7 @@ void parser::primary_expression()
             throw parser_error("line %d: expected ')' in primary expression", linenumber);
     }
     else
-        throw parser_error("line %d: expected primary-id", linenumber);
+        throw parser_error("line %d: expected primary expression", linenumber);
 }
 
 void parser::selection_statement()

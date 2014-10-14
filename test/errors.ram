@@ -2,7 +2,7 @@
 # file for testing error messages
 # break things here!
 
-fun myfun(in hi,) as boo
-    in lol <- <- hi
-	toss toss toss
+fun myfun(in hi) as boo
+    in lol <- hi boo
+    toss toss toss
 endfun
