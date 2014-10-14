@@ -150,7 +150,7 @@ void parser::parameter_list()
     else if (lex.curtok().type() == token_cparen)
         return;
     else
-        throw parser_error("line %d: unexpected token in parameter list '%s'", linenumber, lex.curtok().source_string());
+        throw parser_error("line %d: unexpected token in parameter list '%s'", linenumber, lex.curtok().to_string().c_str());
 }
 
 void parser::statement()
