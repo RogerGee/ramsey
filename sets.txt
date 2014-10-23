@@ -38,7 +38,7 @@ additive-expression{[identifier],[integer-literal],"true","false","(","not"}
 additive-expression-opt{"+","-","<",">","<=",">=","=","!=","and","or","<-",",",[newline]}
 multiplicative-expresion{[identifier],[integer-literal],"true","false","(","not"}
 multiplicative-expression-opt{"*","/","+","-","<",">","<=",">=","=","!=","and","or","<-",",",[newline]}
-prefix-expression{[identifier],[integer-literal],"true","false","(","not"}
+prefix-expression{[identifier],[integer-literal],"true","false","(","-","not"}
 postfix-expression{[identifier],[integer-literal],"true","false","("}
 postfix-expression-opt{"(","*","/","+","-","<",">","<=",">=","=","!=","and","or","<-",",",[newline]}
 primary-expression{[identifier],[integer-literal],"true","false","("}
@@ -189,7 +189,8 @@ multiplicative-expression-opt
     
 prefix-expression
     1 {[identifier],[integer-literal],"true","false","(","not"}
-    2 {"not"}
+    2 {"-"}
+    3 {"not"}
     
 postfix-expression
     1 {[identifier],[integer-literal],"true","false","(","not"}

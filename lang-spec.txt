@@ -229,13 +229,14 @@ lexical conventions defined in the previous section (B)
         <prefix-expression> <multiplicative-expression-opt>
 
 <multiplicative-expression-opt>:
-        "*" <multiplicative-expression>
+        "*" <multiplicative-expression> 
         "/" <multiplicative-expression>
         "mod" <multiplicative-expression>
         ""
 
 <prefix-expression>
         <postfix-expression>
+        "-" <prefix-expression>
         "not" <prefix-expression>
 
 <postfix-expression>:

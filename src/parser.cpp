@@ -259,7 +259,7 @@ void parser::expression()
     if (lex.curtok().type() == token_id || lex.curtok().type() == token_number ||
         lex.curtok().type() == token_number_hex || lex.curtok().type() == token_bool_true ||
         lex.curtok().type() == token_bool_false || lex.curtok().type() == token_oparen ||
-        lex.curtok().type() == token_not)
+        lex.curtok().type() == token_subtract || lex.curtok().type() == token_not)
         assignment_expression();
     else
         throw parser_error("line %d: unexpected token in expression '%s'", linenumber, lex.curtok().to_string().c_str());
@@ -478,6 +478,11 @@ void parser::prefix_expression()
         lex.curtok().type() == token_number_hex || lex.curtok().type() == token_bool_true ||
         lex.curtok().type() == token_bool_false || lex.curtok().type() == token_oparen)
         postfix_expression();
+    else if (lex.curtok().type() == token_subtract)
+    {
+        ++lex;
+        prefix_expression();
+    }
     else if (lex.curtok().type() == token_not)
     {
         ++lex;
