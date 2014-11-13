@@ -3,6 +3,7 @@
    RAMSEY_DEBUG macro defined */
 #include "lexer.h"
 #include "parser.h"
+#include "ast.h"
 #include <iostream>
 using namespace std;
 using namespace ramsey;

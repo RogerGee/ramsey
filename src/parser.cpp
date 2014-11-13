@@ -1,7 +1,6 @@
 /* parser.cpp */
 #include "parser.h"
 #include <cstdio>
-#include <cstdarg>
 #include <cerrno>
 #include <cstring>
 #include <cctype>
@@ -11,23 +10,17 @@ using namespace ramsey;
 // exception types
 parser_error::parser_error(const char* format, ...)
 {
-    static const size_t BUFMAX = 4096;
     va_list args;
-    char buffer[BUFMAX];
     va_start(args,format);
-    vsnprintf(buffer,BUFMAX,format,args);
+    _cstor(format,args);
     va_end(args);
-    _cstor(buffer);
 }
 parser_exception::parser_exception(const char* format, ...)
 {
-    static const size_t BUFMAX = 4096;
     va_list args;
-    char buffer[BUFMAX];
     va_start(args,format);
-    vsnprintf(buffer,BUFMAX,format,args);
+    _cstor(format,args);
     va_end(args);
-    _cstor(buffer);
 }
 
 // ramsey::parser

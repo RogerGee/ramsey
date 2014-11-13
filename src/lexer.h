@@ -2,34 +2,19 @@
 #ifndef LEXER_H
 #define LEXER_H
 #include <exception>
-#include <string>
 #include <vector>
+#include "ramsey-error.h" // gets <string>
 
 namespace ramsey
 {
     // exception types
-    class lexer_error_generic : public std::exception
-    {
-    public:
-        virtual ~lexer_error_generic() throw() {}
-
-        virtual const char* what() const throw()
-        { return _err.c_str(); }
-    protected:
-        lexer_error_generic() {}
-
-        void _cstor(const char* s)
-        { const_cast<std::string&>(_err) = s; }
-    private:
-        const std::string _err;
-    };
-    class lexer_error : public lexer_error_generic // errors reported to user
+    class lexer_error : public compiler_error_generic // errors reported to user
     {
     public:
         lexer_error(const char* format, ...);
         virtual ~lexer_error() throw() {}
     };
-    class lexer_exception : public lexer_error_generic // errors used internally
+    class lexer_exception : public compiler_error_generic // errors used internally
     {
     public:
         lexer_exception(const char* format, ...);

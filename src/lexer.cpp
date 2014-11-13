@@ -11,23 +11,17 @@ using namespace ramsey;
 // exception types
 lexer_error::lexer_error(const char* format, ...)
 {
-    static const size_t BUFMAX = 4096;
     va_list args;
-    char buffer[BUFMAX];
     va_start(args,format);
-    vsnprintf(buffer,BUFMAX,format,args);
+    _cstor(format,args);
     va_end(args);
-    _cstor(buffer);
 }
 lexer_exception::lexer_exception(const char* format, ...)
 {
-    static const size_t BUFMAX = 4096;
     va_list args;
-    char buffer[BUFMAX];
     va_start(args,format);
-    vsnprintf(buffer,BUFMAX,format,args);
+    _cstor(format,args);
     va_end(args);
-    _cstor(buffer);
 }
 
 // token

@@ -10,6 +10,8 @@ a test module that will perform some operation.
 
 Current operations performed by test module:
     - print out lexical tokens and (if necessary) their source strings
+    - print out status of source code parse; this will either indicate that the
+source was successfully parsed or print out an error message
 --------------------------------------------------------------------------------
 Running the test module:
 

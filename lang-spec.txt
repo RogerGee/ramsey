@@ -93,7 +93,7 @@ punctuator:
         ( )
 
 
---Note: in this grammar, a single newline token counts for any sequence of newline tokens, though in 
+--Note: in this grammar, a single newline token counts for any sequence of newline tokens, though in
 -- implementation, newline tokens will represent the logical line count for the input file
 newline                                 --we count LFs as logical lines for error reporting
         (ASCII) 0x0A
@@ -103,7 +103,7 @@ newline                                 --we count LFs as logical lines for erro
 --------------------------------------------------------------------------------
 D. Grammar
 
-   - here we present a context-free grammar for Ramsey; this grammar employs 
+   - here we present a context-free grammar for Ramsey; this grammar employs
 lexical conventions defined in the previous section (B)
 
    - conventions used in this specification:
@@ -115,7 +115,7 @@ lexical conventions defined in the previous section (B)
 <program>:                                --a program is one or more functions as we only
         <function-list>                   --allow functions at file level
 
-<function-list>        
+<function-list>
         <function> <function-list>
         ""
 
@@ -229,7 +229,7 @@ lexical conventions defined in the previous section (B)
         <prefix-expression> <multiplicative-expression-opt>
 
 <multiplicative-expression-opt>:
-        "*" <multiplicative-expression> 
+        "*" <multiplicative-expression>
         "/" <multiplicative-expression>
         "mod" <multiplicative-expression>
         ""

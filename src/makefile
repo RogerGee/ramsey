@@ -31,12 +31,16 @@ endif
 endif
 
 # header file dependencies
-ALL_HEADER_FILES = lexer.h
-LEXER_H = lexer.h
-PARSER_H = parser.h $(LEXER_H)
+RAMSEY_ERROR_H = ramsey-error.h
+LEXER_H = lexer.h $(RAMSEY_ERROR_H)
+AST_H = ast.h ast.tcc $(RAMSEY_ERROR_H) $(LEXER_H)
+PARSER_H = parser.h $(LEXER_H) $(AST_H)
+
+# define all header files for testing
+ALL_HEADER_FILES = lexer.h ramsey-error.h parser.h ast.h ast.tcc
 
 # object code files
-OBJECTS = lexer.o parser.o
+OBJECTS = lexer.o parser.o ast.o ramsey-error.o
 # add optional object code files depending on configuration
 ifeq ($(MAKECMDGOALS),test)
 OBJECTS := $(OBJECTS) test.o
@@ -57,6 +61,10 @@ $(OBJDIR)/lexer.o: lexer.cpp $(LEXER_H)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/lexer.o lexer.cpp
 $(OBJDIR)/parser.o: parser.cpp $(PARSER_H)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/parser.o parser.cpp
+$(OBJDIR)/ast.o: ast.cpp $(AST_H)
+	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/ast.o ast.cpp
+$(OBJDIR)/ramsey-error.o: ramsey-error.cpp
+	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/ramsey-error.o ramsey-error.cpp
 $(OBJDIR)/test.o: test.cpp $(ALL_HEADER_FILES)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/test.o test.cpp
 
