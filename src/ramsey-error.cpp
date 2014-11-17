@@ -1,5 +1,6 @@
 /* ramsey-error.cpp */
 #include "ramsey-error.h"
+#include <cstdio>
 using namespace ramsey;
 
 void compiler_error_generic::_cstor(const char* format,va_list vargs)

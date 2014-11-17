@@ -468,3 +468,11 @@ void lexer::_convert(vector<ptoken>& ptoks)
     static const string acceptChars("+-*/<>=!,()");
     return acceptChars.find(char(ch)) != string::npos;
 }
+
+// ostream operator overloads for debugging
+#ifdef RAMSEY_DEBUG
+std::ostream& ramsey::operator <<(std::ostream& stream,const token& tok)
+{
+    return stream << tok.to_string();
+}
+#endif

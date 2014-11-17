@@ -171,7 +171,7 @@ lexical conventions defined in the previous section (B)
 <expression>:
         <assignment-expression>
 
-<expression-list>:
+<expression-list>:                      --semantically, this returns the last item in the list
         <expression> <expression-list-item>
 
 <expression-list-item>:
@@ -181,7 +181,7 @@ lexical conventions defined in the previous section (B)
 <assignment-expression>:
         <logical-or-expression> <assignment-expression-opt>
 
-<assigment-expression-opt>:
+<assigment-expression-opt>:             --enforce a right-most evaluation (e.g. i = j = 5, do j = 5 first)
         <assignment-operator> <assignment-expression>
         ""
 
@@ -189,52 +189,52 @@ lexical conventions defined in the previous section (B)
         <logical-and-expression> <logical-or-expression-opt>
 
 <logical-or-expression-opt>:
-        "or" <logical-or-expression>
+        "or" <logical-and-expression> <logical-or-expression-opt>
         ""
 
 <logical-and-expression>:
         <equality-expression> <logical-and-expression-opt>
 
 <logical-and-expression-opt>:
-        "and" <logical-and-expression>
+        "and" <equality-expression> <logical-and-expression-opt>
         ""
 
 <equality-expression>:
         <relational-expression> <equality-expression-opt>
 
 <equality-expression-opt>:
-        "=" <equality-expression>
-        "!=" <equality-expression>
+        "=" <relational-expression> <equality-expression-opt>
+        "!=" <relational-expression> <equality-expression-opt>
         ""
 
 <relational-expression>:
         <additive-expression> <relational-expression-opt>
 
 <relational-expression-opt>:
-        "<" <relational-expression>
-        ">" <relational-expression>
-        "<=" <relational-expression>
-        ">=" <relational-expression>
+        "<" <additive-expression> <relational-expression-opt>
+        ">" <additive-expression> <relational-expression-opt>
+        "<=" <additive-expression> <relational-expression-opt>
+        ">=" <additive-expression> <relational-expression-opt>
         ""
 
 <additive-expression>:
         <multiplicative-expression> <additive-expression-opt>
 
 <additive-expression-opt>:
-        "+" <additive-expression>
-        "-" <additive-expression>
+        "+" <multiplicative-expression> <additive-expression-opt>
+        "-" <multiplicative-expression> <additive-expression-opt>
         ""
 
 <multiplicative-expression>:
         <prefix-expression> <multiplicative-expression-opt>
 
 <multiplicative-expression-opt>:
-        "*" <multiplicative-expression>
-        "/" <multiplicative-expression>
-        "mod" <multiplicative-expression>
+        "*" <prefix-expression> <multiplicative-expression-opt>
+        "/" <prefix-expression> <multiplicative-expression-opt>
+        "mod" <prefix-expression> <multiplicative-expression-opt>
         ""
 
-<prefix-expression>
+<prefix-expression>:
         <postfix-expression>
         "-" <prefix-expression>
         "not" <prefix-expression>
@@ -263,7 +263,7 @@ lexical conventions defined in the previous section (B)
 
 <if-concluder>:
         "endif" [newline]
-        "else" <statement-list> "endif" [newline]
+        "else" [newline] <statement-list> "endif" [newline]
 
 <condition>:                                  --just an alias for expression
         <expression>
@@ -272,6 +272,6 @@ lexical conventions defined in the previous section (B)
         "while" "(" <condition> ")" [newline] <statement-list> "endwhile" [newline]
 
 <jump-statement>:
-        "toss" <expression> [newline]                   --note, there is no concept of void, so we demand that something needs to be returned
+        "toss" <expression> [newline]                   --note, there is no concept of void, so we demand that something need be returned
         "smash" [newline]                               --a Ramsefied version of break; ends the execution of the nearest loop
 --------------------------------------------------------------------------------

@@ -1,9 +1,9 @@
 /* ast.h - CS355 Compiler Project */
 #ifndef AST_H
 #define AST_H
-#include "ramsey-error.h"
+#include "ramsey-error.h" // gets <ostream>, <string>
 #include "lexer.h"
-#include <stack>
+#include <deque>
 
 namespace ramsey
 {
@@ -21,31 +21,32 @@ namespace ramsey
         virtual ~ast_exception() throw() {}
     };
 
-    // forward declare types used in this module
-    class ast_node;
-    class ast_function_node;
-    class ast_function_builder;
-    class ast_parameter_node;
-    class ast_statement_node;
+    // forward declare types used in this module before their definition
+    class ast_node; class ast_function_node; class ast_parameter_node;
+    class ast_statement_node; class ast_elf_node; class ast_expression_node;
+    class ast_expression_builder;
 
     // provide a base type for handling AST construction; a subtype will
-    // be created to handle each AST construct kind
+    // be created to handle each construct in the AST
     class ast_builder
     {
     public:
         void add_token(const token* tok)
-        { _elems.push(tok); }
+        { _elems.push_back(tok); }
         void add_node(ast_node* pnode)
-        { _elems.push(pnode); }
+        { _elems.push_back(pnode); }
+        bool is_empty() const
+        { return _elems.empty(); }
+        int size() const
+        { return int(_elems.size()); }
+        void collapse(ast_builder& builder);
     protected:
         ast_builder() {}
 
-        bool is_empty() const
-        { return _elems.empty(); }
         bool is_next_token() const
-        { return _elems.top().flag == ast_element::ast_element_tok; }
+        { return _elems.back().flag == ast_element::ast_element_tok; }
         bool is_next_node() const
-        { return _elems.top().flag == ast_element::ast_element_node; }
+        { return _elems.back().flag == ast_element::ast_element_node; }
         const token* pop_token();
         ast_node* pop_node();
     private:
@@ -62,31 +63,53 @@ namespace ramsey
             union {
                 const token* ptok;
                 ast_node* pnode;
+                int decore;
             };
             short flag;
         };
 
-        std::stack<ast_element> _elems;
+        std::deque<ast_element> _elems;
     };
 
-    // provide a generic node type
+    // provide a generic node type (with optional debug information)
     class ast_node
     {
+    public:
+        ast_node();
+        virtual ~ast_node() {}
+
+        // analyze semantics
+        // generate code
+
+#ifdef RAMSEY_DEBUG
+        void output(std::ostream&) const;
+        virtual void output_at_level(std::ostream&,int level) const;
+#endif
+    protected:
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const = 0;
+#endif
         // virtual semantic analysis
         // virtual code generation
     };
 
-    // provide a generic node that can form a linked-list
+    // provide a generic node that can form a linked-list; any construct
+    // that can appear in sequence should inherit from this base
     template<typename T> // 'T' must be a derivation of ast_linked_node
     class ast_linked_node : public ast_node
     {
     public:
+        ~ast_linked_node();
         T* get_next();
         const T* get_next() const;
         T* get_prev();
         const T* get_prev() const;
         bool beg() const; // at beginning of sequence?
         bool end() const; // at end of sequence?
+
+#ifdef RAMSEY_DEBUG
+        virtual void output_at_level(std::ostream&,int level) const;
+#endif
     protected:
         ast_linked_node();
         void append(T* node);
@@ -102,10 +125,17 @@ namespace ramsey
     private:
         ast_function_node();
 
+        // elements
         const token* _id; // identifier that names function
-        ast_parameter_node* _param; // linked-list of parameter declarations
-        ast_statement_node* _statements; // linked-list of statements
-        const token* _typespec; // type of function
+        ast_parameter_node* _param; // OPTIONAL list of parameter declarations
+        const token* _typespec; // OPTIONAL type of function
+        ast_statement_node* _statements; // OPTIONAL list of statements
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+
     };
     class ast_function_builder : public ast_builder
     {
@@ -118,13 +148,17 @@ namespace ramsey
     class ast_parameter_node : public ast_linked_node<ast_parameter_node>
     {
         friend class ast_parameter_builder;
-    public:
-
     private:
         ast_parameter_node();
 
+        // elements
         const token* _typespec; // type of parameter
         const token* _id; // identifier that names parameter
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
     };
     class ast_parameter_builder : public ast_builder
     {
@@ -135,7 +169,401 @@ namespace ramsey
     };
 
     class ast_statement_node : public ast_linked_node<ast_statement_node>
+    { // abstract class for statements; this shouldn't implement any virtual functions directly
+        friend class ast_statement_builder;
+    public:
+        virtual ~ast_statement_node() {}
+    protected:
+        enum ast_statement_kind
+        {
+            ast_declaration_statement,
+            ast_expression_statement,
+            ast_selection_statement,
+            ast_selection_elf_statement,
+            ast_iteration_statement,
+            ast_jump_statement
+        };
+
+        ast_statement_node(ast_statement_kind kind);
+    private:
+        const ast_statement_kind _kind; // decorate what kind of statement node this is
+    };
+    class ast_statement_builder : public ast_builder
     {
+    public:
+        ast_statement_node* build();
+    };
+
+    class ast_declaration_statement_node : public ast_statement_node
+    {
+        friend class ast_declaration_statement_builder;
+    public:
+        ~ast_declaration_statement_node();
+    private:
+        ast_declaration_statement_node();
+
+        // elements
+        const token* _typespec; // type specifier
+        const token* _id; // identifier (name) of declaration
+        ast_expression_node* _initializer; // OPTIONAL initializer for declaration
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_declaration_statement_builder : public ast_builder
+    {
+    public:
+        ast_declaration_statement_node* build();
+    };
+
+    /* an expression-statement is syntactically identical to
+       an expression-list, so they can be the same AST node type */
+    typedef ast_expression_node ast_expression_statement_node;
+    typedef ast_expression_builder ast_expression_statement_builder;
+
+    class ast_selection_statement_node : public ast_statement_node
+    {
+        friend class ast_selection_statement_builder;
+    public:
+        ~ast_selection_statement_node();
+    private:
+        ast_selection_statement_node();
+
+        // elements
+        ast_expression_node* _condition;
+        ast_statement_node* _body; // OPTIONAL statement block that matches condition
+        ast_elf_node* _elf; // OPTIONAL statement block for elf clause
+        ast_statement_node* _else; // OPTIONAL statement block for else clause
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_selection_statement_builder : public ast_builder
+    {
+    public:
+        ast_selection_statement_node* build();
+    };
+
+    class ast_elf_node : public ast_node
+    {
+        friend class ast_elf_builder;
+    public:
+        ~ast_elf_node();
+    private:
+        ast_elf_node();
+
+        // elements
+        ast_expression_node* _condition;
+        ast_statement_node* _body; // OPTIONAL statement block for body
+        ast_elf_node* _elf; // OPTIONAL elf-statement block
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_elf_builder : public ast_builder
+    {
+    public:
+        ast_elf_node* build();
+    };
+
+    class ast_iterative_statement_node : public ast_statement_node
+    {
+        friend class ast_iterative_statement_builder;
+    private:
+        ast_iterative_statement_node();
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_iterative_statement_builder : public ast_builder
+    {
+    public:
+        ast_iterative_statement_node* build();
+    };
+
+    class ast_jump_statement_node : public ast_statement_node
+    {
+        friend class ast_jump_statement_builder;
+    private:
+        ast_jump_statement_node();
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_jump_statement_builder : public ast_builder
+    {
+    public:
+        ast_jump_statement_node* build();
+    };
+
+    class ast_expression_node : public ast_linked_node<ast_expression_node>
+    { // abstract class for expressions; shouldn't implement any virtual functions directly
+        friend class ast_expression_builder;
+    public:
+        virtual ~ast_expression_node() {};
+    protected:
+        enum ast_expression_kind
+        {
+            ast_assignment_expression,
+            ast_logical_or_expression,
+            ast_logical_and_expression,
+            ast_equality_expression,
+            ast_relational_expression,
+            ast_additive_expression,
+            ast_multiplicative_expression,
+            ast_prefix_expression,
+            ast_postfix_expression,
+            ast_primary_expression
+        };
+
+        ast_expression_node(ast_expression_kind kind);
+
+        struct operand
+        { // an operand could be another node or simplified to an operand
+            operand();
+            operand(const token*);
+            operand(ast_expression_node*);
+            ~operand();
+
+#ifdef RAMSEY_DEBUG
+            void output_at_level(std::ostream&,int level) const;
+#endif
+
+            enum {
+                operand_tok,
+                operand_node
+            };
+            union { 
+                const token* tok_operand;
+                ast_expression_node* node_operand;
+            };
+            short flag;
+        private:
+            operand(const operand&);
+        };
+
+    private:
+        ast_expression_kind _kind; // decorate what kind of expression node this is
+    };
+    class ast_expression_builder : public ast_builder
+    {
+    public:
+        ast_expression_node* build();
+    };
+
+    class ast_assignment_expression_node : public ast_expression_node
+    {
+        friend class ast_assignment_expression_builder;
+    private:
+        ast_assignment_expression_node();
+
+        // elements
+        operand _ops[2];
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_assignment_expression_builder : public ast_builder
+    {
+    public:
+        ast_assignment_expression_node* build();
+    };
+
+    class ast_logical_or_expression_node : public ast_expression_node
+    {
+        friend class ast_logical_or_expression_builder;
+    private:
+        ast_logical_or_expression_node();
+
+        // elements: the operator is implied
+        std::deque<operand> _ops;
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_logical_or_expression_builder : public ast_builder
+    {
+    public:
+        ast_logical_or_expression_node* build();
+    };
+
+    class ast_logical_and_expression_node : public ast_expression_node
+    {
+        friend class ast_logical_and_expression_builder;
+    private:
+        ast_logical_and_expression_node();
+
+        // elements: the operator is implied
+        std::deque<operand> _ops;
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_logical_and_expression_builder : public ast_builder
+    {
+    public:
+        ast_logical_and_expression_node* build();
+    };
+
+    class ast_equality_expression_node : public ast_expression_node
+    {
+        friend class ast_equality_expression_builder;
+    private:
+        ast_equality_expression_node();
+
+        // elements
+        std::deque<operand> _operands;
+        std::deque<const token*> _operators;
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_equality_expression_builder : public ast_builder
+    {
+    public:
+        ast_equality_expression_node* build();
+    };
+
+    class ast_relational_expression_node : public ast_expression_node
+    {
+        friend class ast_relational_expression_builder;
+    private:
+        ast_relational_expression_node();
+
+        // elements
+        std::deque<operand> _operands;
+        std::deque<const token*> _operators;
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_relational_expression_builder : public ast_builder
+    {
+    public:
+        ast_relational_expression_node* build();
+    };
+
+    class ast_additive_expression_node : public ast_expression_node
+    {
+        friend class ast_additive_expression_builder;
+    private:
+        ast_additive_expression_node();
+
+        // elements
+        std::deque<operand> _operands;
+        std::deque<const token*> _operators;
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_additive_expression_builder : public ast_builder
+    {
+    public:
+        ast_additive_expression_node* build();
+    };
+
+    class ast_multiplicative_expression_node : public ast_expression_node
+    {
+        friend class ast_multiplicative_expression_builder;
+    private:
+        ast_multiplicative_expression_node();
+
+        // elements
+        std::deque<operand> _operands;
+        std::deque<const token*> _operators;
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_multiplicative_expression_builder : public ast_builder
+    {
+    public:
+        ast_multiplicative_expression_node* build();
+    };
+
+    class ast_prefix_expression_node : public ast_expression_node
+    {
+        friend class ast_prefix_expression_builder;
+    public:
+
+    private:
+        ast_prefix_expression_node();
+
+        // elements
+        const token* _operator;
+        operand _operand;
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_prefix_expression_builder : public ast_builder
+    {
+    public:
+        ast_prefix_expression_node* build();
+    };
+
+    class ast_postfix_expression_node : public ast_expression_node
+    {
+        friend class ast_postfix_expression_builder;
+    public:
+        ~ast_postfix_expression_node();
+    private:
+        ast_postfix_expression_node();
+
+        // elements
+        operand _operand; // operand modifying expression list
+        ast_expression_node* _expList; // expression list
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
+    };
+    class ast_postfix_expression_builder : public ast_builder
+    {
+    public:
+        ast_postfix_expression_node* build();
+    };
+
+    class ast_primary_expression_node : public ast_expression_node
+    { // this type is created by ast_expression_builder
+        friend class ast_expression_builder;
+    private:
+        ast_primary_expression_node(const token* tok);
+
+        // elements
+        const token* _tok; // in the AST, a primary expression is only a single token expression
+
+        // virtual functions
+#ifdef RAMSEY_DEBUG
+        virtual void output_impl(std::ostream&,int nlevel) const;
+#endif
     };
 }
 

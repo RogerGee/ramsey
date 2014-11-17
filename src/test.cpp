@@ -30,7 +30,8 @@ int main(int argc,const char* argv[])
     try {
         parser parse(argv[1]);
         
-        cout << "parsed successfully\n";
+        cout << "parsed successfully\n\nParse Tree:\n";
+        parse.get_ast()->output(cout);
     }
     catch (parser_error ex) {
         cerr << argv[0] << ": error: " << ex.what() << endl;

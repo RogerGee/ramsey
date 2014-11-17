@@ -2,6 +2,7 @@
 #ifndef RAMSEY_ERROR_H
 #define RAMSEY_ERROR_H
 #include <exception>
+#include <ostream>
 #include <string>
 #include <cstdarg>
 

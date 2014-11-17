@@ -143,6 +143,10 @@ namespace ramsey
         static inline bool ishexletter(int ch);
         static inline bool isoppunc(int ch);
     };
+
+#ifdef RAMSEY_DEBUG
+    std::ostream& operator <<(std::ostream&,const token&);
+#endif
 }
 
 #endif

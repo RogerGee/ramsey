@@ -3,6 +3,7 @@
 #define PARSER_H
 #include "lexer.h" // gets "ramsey-error.h"
 #include "ast.h"
+#include <stack>
 
 namespace ramsey
 {
@@ -24,19 +25,24 @@ namespace ramsey
     {
     public:
         parser(const char* file);
+        ~parser();
 
         int sloc() const
         { return linenumber; }
+        const ast_node* get_ast() const
+        { return ast; }
     private:
         int linenumber;
         lexer lex;
 
-        //parse tree representation
+        // abstract syntax tree
+        ast_node* ast;
 
         // helper functions for parser
         bool eol();
 
         // declare recursive-descent functions
+        std::stack<ast_builder*> builders;
         void program();
         void function_list();
         void function();
