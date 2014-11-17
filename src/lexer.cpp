@@ -165,7 +165,7 @@ string token::to_string() const
     if (_tsource != NULL) {
         result += " { ";
         result += _tsource;
-        result += " } ";
+        result += " }";
     }
     return result;
 }
@@ -202,6 +202,19 @@ lexer lexer::operator ++(int)
     _iter++;
     return tmp;
 }
+#ifdef RAMSEY_DEBUG
+void lexer::output(ostream& stream) const
+{
+    int i = 1;
+    for (vector<token>::const_iterator iter = _stream.begin();iter != _stream.end();++iter) {
+        stream << iter->to_string();
+        if (i++%5 == 0)
+            stream << ",\n";
+        else
+            stream << ", ";
+    }
+}
+#endif
 /*static*/ void lexer::_preprocess(const char* file,vector<ptoken>& ptoks)
 {
     /* preprocess the input stream; this involves partial token

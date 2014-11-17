@@ -87,6 +87,12 @@ void ast_node::output_at_level(ostream& stream,int level) const
         stream.put('\t');
     output_impl(stream,level+1);
 }
+/*static*/ void ast_node::output_annot(ostream& stream,int level,const char* annot)
+{
+    for (int i = 0;i < level;++i)
+        stream.put('\t');
+    stream << '[' << annot << "]\n";
+}
 #endif
 
 // ast_function_node, ast_function_builder
@@ -111,8 +117,10 @@ void ast_function_node::output_impl(ostream& stream,int nlevel) const
     stream << '\n';
     if (_param != NULL)
         _param->output_at_level(stream,nlevel);
-    if (_statements != NULL)
+    if (_statements != NULL) {
+        output_annot(stream,nlevel,"statement-body");
         _statements->output_at_level(stream,nlevel);
+    }
 }
 ast_function_node* ast_function_builder::build()
 {
@@ -202,8 +210,10 @@ ast_declaration_statement_node::~ast_declaration_statement_node()
 void ast_declaration_statement_node::output_impl(ostream& stream,int nlevel) const
 {
     stream << "declaration-statement:id=" << *_id << ",type=" << *_typespec << '\n';
-    if (_initializer != NULL)
+    if (_initializer != NULL) {
+        output_annot(stream,nlevel,"initializer");
         _initializer->output_at_level(stream,nlevel);
+    }
 }
 #endif
 ast_declaration_statement_node* ast_declaration_statement_builder::build()
@@ -236,13 +246,18 @@ ast_selection_statement_node::~ast_selection_statement_node()
 void ast_selection_statement_node::output_impl(ostream& stream,int nlevel) const
 {
     stream << "selection-statement\n";
+    output_annot(stream,nlevel,"condition");
     _condition->output_at_level(stream,nlevel);
-    if (_body != NULL)
+    if (_body != NULL) {
+        output_annot(stream,nlevel,"if-statement-body");
         _body->output_at_level(stream,nlevel);
+    }
     if (_elf != NULL)
         _elf->output_at_level(stream,nlevel);
-    if (_else != NULL)
+    if (_else != NULL) {
+        output_annot(stream,nlevel,"else-statement-body");
         _else->output_at_level(stream,nlevel);
+    }
 }
 #endif
 ast_selection_statement_node* ast_selection_statement_builder::build()
@@ -273,10 +288,16 @@ ast_elf_node::~ast_elf_node()
 void ast_elf_node::output_impl(ostream& stream,int nlevel) const
 {
     stream << "elf-statement\n";
+    output_annot(stream,nlevel,"condition");
     _condition->output_at_level(stream,nlevel);
-    _body->output_at_level(stream,nlevel);
-    if (_elf != NULL)
+    if (_body != NULL) {
+        output_annot(stream,nlevel,"elf-statement-body");
+        _body->output_at_level(stream,nlevel);
+    }
+    if (_elf != NULL) {
+        output_annot(stream,nlevel,"elf");
         _elf->output_at_level(stream,nlevel);
+    }
 }
 #endif
 ast_elf_node* ast_elf_builder::build()
@@ -645,7 +666,10 @@ void ast_postfix_expression_node::output_impl(ostream& stream,int nlevel) const
 {
     stream << "postfix-expression\n";
     _operand.output_at_level(stream,nlevel);
-    _expList->output_at_level(stream,nlevel);
+    if (_expList != NULL) {
+        output_annot(stream,nlevel,"parameter-list");
+        _expList->output_at_level(stream,nlevel);
+    }
 }
 #endif
 ast_postfix_expression_node* ast_postfix_expression_builder::build()

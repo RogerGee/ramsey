@@ -243,7 +243,11 @@ lexical conventions defined in the previous section (B)
         <primary-expression> <postfix-expression-opt>
 
 <postfix-expression-opt>:
-        "(" <expression-list> ")"          --function calls
+        "(" <function-call> ")"          --function calls
+        ""
+
+<function-call>:
+        <expression-list>
         ""
 
 <primary-expression>:

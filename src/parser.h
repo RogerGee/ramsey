@@ -31,6 +31,8 @@ namespace ramsey
         { return linenumber; }
         const ast_node* get_ast() const
         { return ast; }
+        const lexer& get_lexer() const
+        { return lex; }
     private:
         int linenumber;
         lexer lex;
@@ -78,6 +80,7 @@ namespace ramsey
         void prefix_expression();
         void postfix_expression();
         void postfix_expression_opt();
+        void function_call();
         void primary_expression();
         void selection_statement();
         void if_body();

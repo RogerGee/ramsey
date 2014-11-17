@@ -9,18 +9,19 @@ PROGRAM_NAME_DEBUG = ramsey-debug
 PROGRAM_NAME_TEST = ramsey-test
 OBJDIR_NAME = obj
 OBJDIR_NAME_DEBUG = dobj
-LINK = g++
 OUT = -o 
 
 # configuration options
 ifeq ($(MAKECMDGOALS),)
-# config for 'all'
-COMPILE = g++ -c -Wall -pedantic-errors -Werror -Wextra -Wshadow -Wfatal-errors -Wno-unused-variable --std=gnu++0x
+# config for 'all'; this should be used for deployment builds (LINK should strip as much out as possible)
+COMPILE = g++ -c -O3 -Wall -pedantic-errors -Werror -Wextra -Wshadow -Wfatal-errors -Wno-unused-variable --std=gnu++0x
+LINK = g++ -s
 OBJDIR = $(OBJDIR_NAME)
 PROGRAM = $(PROGRAM_NAME)
 else
 # config for anything else (debug, test)
 COMPILE = g++ -g -c -Wall -pedantic-errors -Werror -Wextra -Wshadow -Wfatal-errors -Wno-unused-variable --std=gnu++0x
+LINK = g++
 OBJDIR = $(OBJDIR_NAME_DEBUG)
 MACROS = -DRAMSEY_DEBUG
 ifeq ($(MAKECMDGOALS),test)

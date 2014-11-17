@@ -1,6 +1,6 @@
 /* test.cpp - this module will server as the entry point to a program
    that tests some feature of the Ramsey compiler; try to build with
-   RAMSEY_DEBUG macro defined */
+   RAMSEY_DEBUG macro defined (otherwise you will get compile errors) */
 #include "lexer.h"
 #include "parser.h"
 #include "ast.h"
@@ -15,23 +15,19 @@ int main(int argc,const char* argv[])
         return 1;
     }
 
+    // attempt to compile the file, print out intermediate results
     try {
-        lexer lex(argv[1]);
+        parser parse(argv[1]);
+        const lexer& lex = parse.get_lexer();
+        const ast_node* ast = parse.get_ast();
 
-        while (!lex.endtok()) {
-            cout << lex.curtok().to_string() << '\n';
-            ++lex;
-        }
+        lex.output(cout);
+        cout << "\nParsed successfully\n\n[Parse Tree]\n";
+        ast->output(cout);
     }
     catch (lexer_error ex) {
         cerr << argv[0] << ": error: " << ex.what() << endl;
         return 1;
-    }
-    try {
-        parser parse(argv[1]);
-        
-        cout << "parsed successfully\n\nParse Tree:\n";
-        parse.get_ast()->output(cout);
     }
     catch (parser_error ex) {
         cerr << argv[0] << ": error: " << ex.what() << endl;

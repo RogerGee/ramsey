@@ -3,7 +3,7 @@
 #define LEXER_H
 #include <exception>
 #include <vector>
-#include "ramsey-error.h" // gets <string>
+#include "ramsey-error.h" // gets <string>, <ostream>
 
 namespace ramsey
 {
@@ -116,6 +116,10 @@ namespace ramsey
         { return _iter == _stream.end(); }
         lexer& operator ++();
         lexer operator ++(int);
+
+#ifdef RAMSEY_DEBUG
+        void output(std::ostream&) const;
+#endif
     private:
         std::vector<token> _stream;
         std::vector<token>::const_iterator _iter;

@@ -88,6 +88,7 @@ namespace ramsey
     protected:
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const = 0;
+        static void output_annot(std::ostream&,int level,const char* annot);
 #endif
         // virtual semantic analysis
         // virtual code generation
@@ -538,7 +539,7 @@ namespace ramsey
 
         // elements
         operand _operand; // operand modifying expression list
-        ast_expression_node* _expList; // expression list
+        ast_expression_node* _expList; // OPTIONAL expression list
 
         // virtual functions
 #ifdef RAMSEY_DEBUG
