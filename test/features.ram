@@ -2,34 +2,36 @@
 # features.ram - demonstrate features of language
 # (note: this file is obsolete)
 
-in score <- 0
-boo dead <- false
-in health <- 100
-in enemyHealth <- 100
+#in score <- 0
+#boo dead <- false
+#in health <- 100
+#in enemyHealth <- 100
 
 fun get_random_number() as in
     in entropy
-    give "Quick, enter entropy value: "
-    take entropy
+    #give "Quick, enter entropy value: "
+    #take entropy
     toss entropy
 endfun # it was fun indeed
 
 fun do_commands() as boo
-    give "1 - attack"
-    give "2 - flee"
-    give "3 - SALT"
+    #give "1 - attack"
+    #give "2 - flee"
+    #give "3 - SALT"
 
     # let's have at least some fun before its over
     toss not(not(not (not true) and false) or true) and not false or not not not not false and not false
 endfun
 
-give "You are being attacked by a giant slug monster."
+#give "You are being attacked by a giant slug monster."
+fun main()
+
 while (not dead)
     do_commands()
 
     in com
-    give "Command? "
-    take com
+    #give "Command? "
+    #take com
 
     # demonstrate math
     com <- com * com / com
@@ -43,42 +45,43 @@ while (not dead)
        enemyHealth <- enemyHealth - damage
 
        if (health > 0)
-           give "You dealt a blow!"
+           #give "You dealt a blow!"
 
            if (enemyHealth <= 0)
-              give "You were victorious!"
+              #give "You were victorious!"
               dead <- true # you still die though
            endif
        else
            dead <- true
 
-           give "You died."
+           #give "You died."
            if (enemyHealth <= 0)
-              give "As consolation: you killed the slug monster thing too"
+              #give "As consolation: you killed the slug monster thing too"
            endif
        endif
     elf (com = 2)
         dead = true
     elf (com = 3)
-        give "Well, that was easy, you vanquished it instantly."
+        #give "Well, that was easy, you vanquished it instantly."
         dead = true
     elf (com > 3 or com >= 2)
-        give "Bad number: "
-        give "\""
-        give com
-        give "\""
+        #give "Bad number: "
+        #give "\""
+        #give com
+        #give "\""
     elf (com < 1 or com <= 0)
-        give "Bad \\\\\"number\\\\\""
+        #give "Bad \\\\\"number\\\\\""
 
         # just demonstrating...
-        in waste[5]
+        in waste
         in index <- 0
         while (index < 5)
-            waste[index] <- index + 5*index + index/2 - 12*144 + (7+5*8)*5/(2+3)
-            waste[index] <- 5/index # ouch!
+            waste <- index + 5*index + index/2 - 12*144 + (7+5*8)*5/(2+3)
+            waste <- 5/index # ouch!
             index <- index+1
         endwhile
     else
         # never ever?
     endif
 endwhile
+endfun

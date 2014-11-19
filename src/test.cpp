@@ -22,7 +22,7 @@ int main(int argc,const char* argv[])
         const ast_node* ast = parse.get_ast();
 
         lex.output(cout);
-        cout << "\nParsed successfully\n\n[Parse Tree]\n";
+        cout << "\nParsed successfully\n\n[Abstract Syntax Tree]\n";
         ast->output(cout);
     }
     catch (lexer_error ex) {

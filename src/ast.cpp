@@ -309,6 +309,67 @@ ast_elf_node* ast_elf_builder::build()
     return node;
 }
 
+// ast_iterative_statement_node, ast_iterative_statement_builder
+ast_iterative_statement_node::ast_iterative_statement_node()
+    : ast_statement_node(ast_iterative_statement), _condition(NULL), _body(NULL)
+{
+}
+ast_iterative_statement_node::~ast_iterative_statement_node()
+{
+    if (_condition != NULL)
+        delete _condition;
+    if (_body != NULL)
+        delete _body;
+}
+#ifdef RAMSEY_DEBUG
+void ast_iterative_statement_node::output_impl(ostream& stream,int nlevel) const
+{
+    stream << "ast_iterative_statement_node\n";
+    output_annot(stream,nlevel,"condition");
+    _condition->output_at_level(stream,nlevel);
+    if (_body != NULL) {
+        output_annot(stream,nlevel,"statement-body");
+        _body->output_at_level(stream,nlevel);
+    }
+}
+#endif
+ast_iterative_statement_node* ast_iterative_statement_builder::build()
+{
+    ast_iterative_statement_node* node = new ast_iterative_statement_node;
+    node->_body = static_cast<ast_statement_node*>(pop_node());
+    node->_condition = static_cast<ast_expression_node*>(pop_node());
+    return node;
+}
+
+// ast_jump_statement_node, ast_jump_statement_builder
+ast_jump_statement_node::ast_jump_statement_node()
+    : ast_statement_node(ast_jump_statement), _kind(NULL), _expr(NULL)
+{
+}
+ast_jump_statement_node::~ast_jump_statement_node()
+{
+    if (_expr != NULL)
+        delete _expr;
+}
+#ifdef RAMSEY_DEBUG
+void ast_jump_statement_node::output_impl(ostream& stream,int nlevel) const
+{
+    stream << "ast_jump_statement_node:kind=" << *_kind << '\n';
+    if (_expr != NULL) {
+        output_annot(stream,nlevel,"return-expression");
+        _expr->output_at_level(stream,nlevel);
+    }
+}
+#endif
+ast_jump_statement_node* ast_jump_statement_builder::build()
+{
+    ast_jump_statement_node* node = new ast_jump_statement_node;
+    if ( is_next_node() )
+        node->_expr = static_cast<ast_expression_node*>(pop_node());
+    node->_kind = pop_token();
+    return node;
+}
+
 // ast_expression_node, ast_expression_node::operand, ast_expression_builder
 ast_expression_node::ast_expression_node(ast_expression_kind kind)
     : _kind(kind)

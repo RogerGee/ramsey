@@ -211,10 +211,20 @@ void parser::statement()
         builders.pop();
         builders.top()->add_node( selBuilder.build() );
     }
-    else if (lex.curtok().type() == token_while)
+    else if (lex.curtok().type() == token_while) {
+        ast_iterative_statement_builder iterBuilder;
+        builders.push(&iterBuilder);
         iterative_statement();
-    else if (lex.curtok().type() == token_toss || lex.curtok().type() == token_smash)
+        builders.pop();
+        builders.top()->add_node( iterBuilder.build() );
+    }
+    else if (lex.curtok().type() == token_toss || lex.curtok().type() == token_smash) {
+        ast_jump_statement_builder jumpBuilder;
+        builders.push(&jumpBuilder);
         jump_statement();
+        builders.pop();
+        builders.top()->add_node( jumpBuilder.build() );
+    }
     else
         throw parser_error("line %d: malformed statement", linenumber);
 }
@@ -318,6 +328,9 @@ void parser::expression()
 
 void parser::expression_list()
 {
+    // there should already be an expression builder on the stack
+    // for building the list; this new expression builder builds
+    // a single list item for the expression list
     ast_expression_builder expBuilder;
     builders.push(&expBuilder);
     expression();
@@ -762,14 +775,22 @@ void parser::iterative_statement()
         ++lex;
     else
         throw parser_error("line %d: expected '(' after iterative", linenumber);
+    ast_expression_builder expBuilder;
+    builders.push(&expBuilder);
     expression();
+    builders.pop();
+    builders.top()->add_node( expBuilder.build() );
     if (lex.curtok().type() == token_cparen)
         ++lex;
     else
         throw parser_error("line %d: expected ')' after iterative condition", linenumber);
     if (!eol())
         throw parser_error("line %d: expected newline after iterative condition", linenumber);
+    ast_statement_builder statBuilder;
+    builders.push(&statBuilder);
     statement_list();
+    builders.pop();
+    builders.top()->add_node( statBuilder.build() );
     if (lex.curtok().type() == token_endwhile)
         ++lex;
     else
@@ -782,14 +803,20 @@ void parser::jump_statement()
 {
     if (lex.curtok().type() == token_toss)
     {
+        builders.top()->add_token(&lex.curtok());
         ++lex;
+        ast_expression_builder expBuilder;
+        builders.push(&expBuilder);
         expression_list();
+        builders.pop();
+        builders.top()->add_node( expBuilder.build() );
         if (!eol())
             throw parser_error("line %d: expected newline after 'toss'", linenumber);
     }
     else if (lex.curtok().type() == token_smash)
     {
         ++lex;
+        builders.top()->add_token(&lex.curtok());
         if (!eol())
             throw parser_error("line %d: expected newline after 'smash'", linenumber);
     }

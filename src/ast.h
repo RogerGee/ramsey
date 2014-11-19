@@ -181,7 +181,7 @@ namespace ramsey
             ast_expression_statement,
             ast_selection_statement,
             ast_selection_elf_statement,
-            ast_iteration_statement,
+            ast_iterative_statement,
             ast_jump_statement
         };
 
@@ -276,8 +276,14 @@ namespace ramsey
     class ast_iterative_statement_node : public ast_statement_node
     {
         friend class ast_iterative_statement_builder;
+    public:
+        ~ast_iterative_statement_node();
     private:
         ast_iterative_statement_node();
+
+        // elements
+        ast_expression_node* _condition;
+        ast_statement_node* _body; // OPTIONAL
 
         // virtual functions
 #ifdef RAMSEY_DEBUG
@@ -293,8 +299,14 @@ namespace ramsey
     class ast_jump_statement_node : public ast_statement_node
     {
         friend class ast_jump_statement_builder;
+    public:
+        ~ast_jump_statement_node();
     private:
         ast_jump_statement_node();
+
+        // elements
+        const token* _kind; // 'toss' or 'smash'
+        ast_expression_node* _expr; // OPTIONAL used only for 'toss' statement
 
         // virtual functions
 #ifdef RAMSEY_DEBUG
