@@ -78,6 +78,8 @@ keyword:
         smash
         endwhile
         in
+        big
+        small
         boo
         mod
         and
@@ -156,6 +158,8 @@ lexical conventions defined in the previous section (B)
 
 <typename>:
         "in"
+        "big"
+        "small"
         "boo"
 
 <initializer>:

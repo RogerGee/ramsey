@@ -118,6 +118,10 @@ const char* token::to_string_kind() const
         return "token_comma";
     case token_in:
         return "token_in";
+    case token_big:
+        return "token_big";
+    case token_small:
+        return "token_small";
     case token_boo:
         return "token_boo";
     case token_if:
@@ -337,6 +341,10 @@ void lexer::_convert(vector<ptoken>& ptoks)
             // if the identifier is a keyword then flag it
             if (iter->payload == "in")
                 t = token_in;
+            else if (iter->payload == "big")
+                t = token_big;
+            else if (iter->payload == "small")
+                t = token_small;
             else if (iter->payload == "boo")
                 t = token_boo;
             else if (iter->payload == "if")

@@ -139,7 +139,8 @@ void parser::function_type_specifier()
 
 void parser::parameter_declaration()
 {
-    if (lex.curtok().type() == token_in || lex.curtok().type() == token_boo)
+    if (lex.curtok().type() == token_in || lex.curtok().type() == token_big
+        || lex.curtok().type() == token_small || lex.curtok().type() == token_boo)
     {
         parameter();
         parameter_list();
@@ -174,10 +175,11 @@ void parser::parameter_list()
     else
     {
         // next token is an identifier, user needs comma
-        if (lex.curtok().type() == token_in or lex.curtok().type() == token_boo)
+        if (lex.curtok().type() == token_in || lex.curtok().type() == token_big
+            || lex.curtok().type() == token_small || lex.curtok().type() == token_boo)
             throw parser_error("line %d: expected ',' in parameter list", linenumber);
         // next token indicates end of parameters, user needs cparen
-        else if (lex.curtok().type() == token_as or lex.curtok().type() == token_eol)
+        else if (lex.curtok().type() == token_as || lex.curtok().type() == token_eol)
             throw parser_error("line %d: expected ')' after parameter list", linenumber);
         else
             throw parser_error("line %d: unexpected token in parameter list '%s'", linenumber, lex.curtok().to_string().c_str());
@@ -186,7 +188,8 @@ void parser::parameter_list()
 
 void parser::statement()
 {
-    if (lex.curtok().type() == token_in || lex.curtok().type() == token_boo) {
+    if (lex.curtok().type() == token_in || lex.curtok().type() == token_big || lex.curtok().type() == token_small
+        || lex.curtok().type() == token_boo) {
         ast_declaration_statement_builder declStatBuilder;
         builders.push(&declStatBuilder);
         declaration_statement();
@@ -231,7 +234,8 @@ void parser::statement()
 
 void parser::statement_list()
 {
-    if (lex.curtok().type() == token_in || lex.curtok().type() == token_boo ||
+    if (lex.curtok().type() == token_in || lex.curtok().type() == token_big ||
+        lex.curtok().type() == token_small || lex.curtok().type() == token_boo ||
         lex.curtok().type() == token_id || lex.curtok().type() == token_number ||
         lex.curtok().type() == token_number_hex || lex.curtok().type() == token_bool_true ||
         lex.curtok().type() == token_bool_false || lex.curtok().type() == token_string ||
@@ -267,7 +271,8 @@ void parser::declaration_statement()
 
 void parser::type_name()
 {
-    if (lex.curtok().type()==token_in || lex.curtok().type()==token_boo) {
+    if (lex.curtok().type()==token_in || lex.curtok().type() == token_big ||
+        lex.curtok().type() == token_small || lex.curtok().type()==token_boo) {
         // keep the type name specifier in the AST
         builders.top()->add_token(&lex.curtok());
         ++lex;
