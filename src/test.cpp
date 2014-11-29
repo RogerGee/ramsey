@@ -26,11 +26,15 @@ int main(int argc,const char* argv[])
         ast->output(cout);
     }
     catch (lexer_error ex) {
-        cerr << argv[0] << ": error: " << ex.what() << endl;
+        cerr << argv[0] << ": scan error: " << ex.what() << endl;
         return 1;
     }
     catch (parser_error ex) {
-        cerr << argv[0] << ": error: " << ex.what() << endl;
+        cerr << argv[0] << ": syntax error: " << ex.what() << endl;
+        return 1;
+    }
+    catch (semantic_error ex) {
+        cerr << argv[0] << ": semantic error: " << ex.what() << endl;
         return 1;
     }
 }

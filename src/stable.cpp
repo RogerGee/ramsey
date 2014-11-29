@@ -1,5 +1,12 @@
 #include "stable.h"
+#include <cstring>
+using namespace std;
 using namespace ramsey;
+
+bool ramsey::operator ==(const symbol& a,const symbol& b)
+{
+    return strcmp(a.get_name(),b.get_name()) == 0;
+}
 
 void stable::addScope()
 {
@@ -11,32 +18,24 @@ void stable::remScope()
     table.pop_back();
 }
 
-bool stable::add(std::string name, stype type)
+bool stable::add(const symbol* symb)
 {
-    if (table.back().find(name) != table.back().end())
-        return false;
-    symbol s;
-    s.name = name;
-    s.type = type;
-    table.back().insert(s);
-    return true;
+    auto r = table.back().insert( make_pair<const char*,const symbol*>(symb->get_name(),(const symbol*)symb) );
+    return r.second;
 }
 
-bool stable::hasSymbol(std::string name)
+const symbol* stable::getSymbol(const char* id) const
 {
-    if (!find(name))
-        return true;
-    return false;
+    for (auto it = table.rbegin(); it != table.rend(); it++)
+    {
+        auto it2 = it->find(id);
+        if (it2 != it->end())
+            return it2->second;
+    }
+    return NULL;
 }
 
-stype stable::typeOf(std::string name)
-{
-    if (!find(name))
-        return stype_invalid;
-    return find(name)->type;
-}
-
-const symbol* stable::find(std::string name)
+/*const symbol* stable::find(std::string name) const
 {
     for (auto it = table.rbegin(); it != table.rend(); it++)
     {
@@ -45,5 +44,4 @@ const symbol* stable::find(std::string name)
             return &*it2;
     }
     return NULL;
-}
-
+}*/

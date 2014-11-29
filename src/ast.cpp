@@ -3,8 +3,8 @@
 using namespace std;
 using namespace ramsey;
 
-// ast_error, ast_exception
-ast_error::ast_error(const char* format, ...)
+// semantic_error, ast_exception
+semantic_error::semantic_error(const char* format, ...)
 {
     va_list args;
     va_start(args,format);

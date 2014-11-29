@@ -1,0 +1,224 @@
+This document is a reference for creating i386 (3rd-gen Intel x86) assembly
+programs using GAS, the GNU Assembler.
+--------------------------------------------------------------------------------
+Using the GNU Assembler:
+      The GNU Assembler can be invoked by using the 'as' command on the command-line. You need to have
+the GNU Compiler Collection installed (at least the C compiler, gcc). The assembler should behave the
+same on any system (Windows, Linux, Mac), however the code it generates will be different. While most
+of the assembly code will look the same on any platform, there are some differences that will be pointed
+out (see especially name mangling on MS Windows).
+--------------------------------------------------------------------------------
+General:
+        - '#' is the comment character for this ASM flavor
+        - '/**/' can be used for multiline comments
+
+        - GAS uses the following syntax for instructions
+          INSTR    src, dst      # do operation on source to destination
+          [examples]
+          movel %eax, %edx       # store value in %eax into %edx
+          addl  %edx, %eax       # add value in %edx to value in %eax
+
+        - Working with values:
+           - Any literal number is prefixed with a '$':
+             mov $5, %eax
+           - To deference a register value (treat it as a memory address) use
+           parentheses:
+             mov -4(%ebp), %eax         # move value at memory location %ebp-4 to %eax
+--------------------------------------------------------------------------------
+Basic instructions:
+
+      The following mnemonics represent opcodes in x86. They can be postfix with
+'l' to mean that the operands should be long integers (32-bits). Any argument labeled
+'arg' cannot be an immediate value.
+
+    add     src, dst
+    sub     src, dst
+    mul     arg                 # [unsigned] multiply argument value by %ax and store in %dx:%ax
+    imul    arg                 # [signed] multiply argument value by %ax and store in %dx:%ax
+    imul    src, dst            # multiply src by dst and store in dst
+    div     arg                 # [unsigned] divide DX:AX by argument value; store remainder in %dx and quotient in %ax
+    idiv                        # [signed] " "
+            (note: the mul, imul and div opcodes work for longs in just the same way; just replace registers
+with their extended variants; e.g. %ax => %eax)
+    neg    arg                  # store 2s complement negation in argument
+    inc    arg                  # store argument value+1 in argument
+    dec    arg                  # store argument value-1 in argument
+
+    [pointers]
+    It is necessary to work with memory address values. To load an address (instead
+of the value at an address), use the 'lea' instruction (load effective address):
+       lea   src, dst
+       [example]
+       lea 8(%esp), %eax
+
+    [comparisons]
+    Use the 'cmp' instruction; it compares two numbers, setting bits in the flags
+register. Note that the argument order is confusing:
+       cmp arg2, arg1
+     So if a 'jl' instruction follows, it will jump if arg1 < arg2.
+
+    [jumping]
+    unconditional jump (jumps every time):
+        jmp loc
+    conditional jump (follows a 'cmp' statement):
+        je      # jump equal to
+        jne     # jump not equal to
+        jg      # jump greater than (signed comparison)
+        jge     # jump greater than or equal to (signed comparison)
+        ja      # jump greater than (unsigned comparison)
+        jae     # jump greater than or equal to (unsigned comparison)
+        jl      # jump less than (signed comparison)
+        jle     # jump less than or equal to (signed comparison)
+        jb      # jump less than (unsigned comparison)
+        jbe     # jump less than or equal to (unsigned comparison)
+
+--------------------------------------------------------------------------------
+Labels:
+        There are three kinds of labels: symbol labels, local labels and dollar
+local labels.
+      [symbol labels]
+      These labels correspond to a symbol. They can be used to define a function.
+
+  foo:
+        ...
+
+      [local labels]
+      Local labels use positive integer numbers to refer to an instruction in
+the source code text. Numbers may be repeated any number of times. When using
+a label (e.g. in a jump instruction), you can postfix if with either 'b' or 'f'
+meaning backwards and forwards respectively. Jumping backwards will find the
+nearest local label preceeding the current statement; jumping forwards will find
+the nearest local label proceeding the current statement.
+
+      [dollar local labels]
+      Work like local labels except postfix with a '$'. They have "scope", meaning
+they become undefined when the next symbol label is seen. This is useful for
+local labels within function blocks.
+--------------------------------------------------------------------------------
+Registers:
+        [general purpose, 32-bit registers]
+        eax             # accumulator
+        ebx ecx edx     
+        esi edi
+        ebp             # base pointer (frame pointer)
+        esp             # stack pointer
+        eip             # instruction pointer
+
+        [general purpose, 16-bit registers]
+        ax bx cx dx di si bp sp
+
+        [general purpose, 8-bit registers]
+        ah al bh bl ch cl dh dl
+
+        All registers are prefixed by a '%' when referenced in ASM.
+--------------------------------------------------------------------------------
+Functions:
+        Functions are a high-level concept. In assembly, a function is a block
+of instructions referred to via a symbol label. A function follows a calling
+convention. While there are a number of calling conventions, the CDECL (C
+language) calling convention is the one most commonly seen. Since the driver
+will be written in C, this document will describe the CDECL, C-language calling
+convention.
+
+     [terminology]
+     - stack frame: The memory spaces on the stack defined between %esp and %ebp.
+Addresses grow from higher numbers to lower numbers (meaning %esp should be <=
+to %ebp at all times). Each function must create its own stack frame for things
+like local variables. A function accesses the caller's stack frame as well to 
+get function arguments. The base pointer (%ebp) refers to the base address of the
+stack frame. The stack pointer (%esp) refers to the top of the stack frame.
+     - return value: The function returns a value to its caller (normally). In the
+CDECL convention, this is done by passing a value in the EAX register. Since
+Ramsey does not use compound types (e.g. structs), this document will not discuss
+other conventional requirements for compound types and floating-point numbers.
+     - return address: an instruction location to which a function must jump upon
+completion. The caller supplies this address. The 'ret' instruction automatically
+pops this address off the stack and issues a jump command.
+
+     The basic function procedure looks like this:
+
+     .globl proc                  # define global symbol for linker
+proc:
+        push %ebp                 # save old base pointer
+        movl %esp, %ebp           # create new stack frame
+
+        # function statements go here
+
+        leave                     # restore previous stack frame
+        ret                       # return to caller
+
+     When a procedure is called, it receives arguments and a return address from
+the caller. Arguments are pushed on the stack in reverse order first. If you think
+about a C function call, then the arguments are pushed on the stack in a right-to-left
+order. After the arguments comes the return address.
+
+     The function then must create a new stack frame. At this point the stack frame
+looks like this:
+----------------------------------
+      [argument n]                      4n+8(%ebp)
+      ...
+      [argument 1]                      8(%ebp)
+      [return address]                  4(%ebp)
+      [previous %ebp value]             0(%ebp)
+      [%ebp]
+      ...
+      [%esp]
+-----------------------------------
+
+The width of each item on the stack is 4 bytes (since this is 32-bit code). Positive
+offsets from %ebp are used to access function parameters (beginning at offset 8).
+Negative offsets are used to access local variables on the function's stack frame.
+
+Here is a complete, working function that sums its argument list. This is variadic function;
+the C function declaration would look something like this:
+    extern int sum(int, ...);
+
+        .globl  sum
+sum:
+        pushl   %ebp
+        movl    %esp, %ebp
+        movl    $0, %eax
+        movl    8(%ebp), %ecx   # store first argument to ECX (number of integers in argument list)
+        leal    12(%ebp), %esi  # store second argument address to ESI
+1:      addl    (%esi), %eax    # add next number
+        addl    $4, %esi        # update index to point at next argument
+        dec     %ecx            # decrement counter
+        cmp     $0, %ecx        # if counter is not zero then continue
+        jne     1b
+        leave
+        ret
+
+The following C driver program uses the function:
+
+#include <stdio.h>
+
+extern int sum(int, ...);
+
+int main()
+{
+    int a = sum(5,1,2,3,4,5);
+    printf("%d\n",a);
+}
+
+For the GCC linker 'ld' to find the function, it must be labeled as an external
+symbol in the ASM source. This is the function of the .globl directive. The
+symbol label is used internally within the source file. For external code to link
+into the functions, they must be defined as global symbols provided by the file.
+
+To call a function within assembly, use:
+   call proc
+--------------------------------------------------------------------------------
+Looping:
+
+        The ECX register can be used for counting within a loop in conjunction
+with the 'loop' instruction. This instruction decrements ECX. If ECX is still
+non-zero, the control jumps up to a specified address. If ECX is zero then control
+continues past the loop instruction:
+          loop addr
+--------------------------------------------------------------------------------
+Reference sites:
+    https://www.cs.utah.edu/dept/old/texinfo/as/as_toc.html
+    http://www.hep.wisc.edu/~pinghc/x86AssmTutorial.htm
+    https://sourceware.org/binutils/docs/as/Pseudo-Ops.html     --directives reference
+    https://web.eecs.umich.edu/~prabal/teaching/eecs373-f11/readings/Assembler.pdf
+    http://www.uclibc.org/docs/psABI-i386.pdf   --PDF page 36 shows calling convention stack layout

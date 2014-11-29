@@ -3,16 +3,17 @@
 #define AST_H
 #include "ramsey-error.h" // gets <ostream>, <string>
 #include "lexer.h"
+#include "stable.h"
 #include <deque>
 
 namespace ramsey
 {
     // exception types
-    class ast_error : public compiler_error_generic
+    class semantic_error : public compiler_error_generic
     {
     public:
-        ast_error(const char* format, ...);
-        virtual ~ast_error() throw() {}
+        semantic_error(const char* format, ...);
+        virtual ~semantic_error() throw() {}
     };
     class ast_exception : public compiler_error_generic
     {
@@ -78,7 +79,7 @@ namespace ramsey
         ast_node();
         virtual ~ast_node() {}
 
-        // analyze semantics
+        void check_semantics(stable& symtable) const; // begin semantic analysis at this node
         // generate code
 
 #ifdef RAMSEY_DEBUG
@@ -90,7 +91,13 @@ namespace ramsey
         virtual void output_impl(std::ostream&,int nlevel) const = 0;
         static void output_annot(std::ostream&,int level,const char* annot);
 #endif
-        // virtual semantic analysis
+    private:
+        // disallow copying
+        ast_node(ast_node&);
+        ast_node& operator =(const ast_node&);
+
+        // virtual interface
+        virtual void semantics_impl(stable& symtable) const = 0; // perform semantic analysis
         // virtual code generation
     };
 
@@ -118,7 +125,8 @@ namespace ramsey
         ast_linked_node<T>* _nxt, *_prv;
     };
 
-    class ast_function_node : public ast_linked_node<ast_function_node>
+    class ast_function_node : public ast_linked_node<ast_function_node>,
+                              private symbol
     { // represents the root node node of the AST
         friend class ast_function_builder;
     public:
@@ -131,12 +139,18 @@ namespace ramsey
         ast_parameter_node* _param; // OPTIONAL list of parameter declarations
         const token* _typespec; // OPTIONAL type of function
         ast_statement_node* _statements; // OPTIONAL list of statements
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
-
+        virtual void semantics_impl(stable& symtable) const;
+        virtual const char* get_name_impl() const
+        { return _id->source_string(); }
+        virtual token_t get_type_impl() const
+        { return _typespec != NULL ? _typespec->type() : token_in; }
+        virtual skind get_kind_impl() const
+        { return skind_function; }
     };
     class ast_function_builder : public ast_builder
     {
@@ -155,11 +169,12 @@ namespace ramsey
         // elements
         const token* _typespec; // type of parameter
         const token* _id; // identifier that names parameter
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_parameter_builder : public ast_builder
     {
@@ -207,11 +222,12 @@ namespace ramsey
         const token* _typespec; // type specifier
         const token* _id; // identifier (name) of declaration
         ast_expression_node* _initializer; // OPTIONAL initializer for declaration
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_declaration_statement_builder : public ast_builder
     {
@@ -237,11 +253,12 @@ namespace ramsey
         ast_statement_node* _body; // OPTIONAL statement block that matches condition
         ast_elf_node* _elf; // OPTIONAL statement block for elf clause
         ast_statement_node* _else; // OPTIONAL statement block for else clause
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_selection_statement_builder : public ast_builder
     {
@@ -261,11 +278,12 @@ namespace ramsey
         ast_expression_node* _condition;
         ast_statement_node* _body; // OPTIONAL statement block for body
         ast_elf_node* _elf; // OPTIONAL elf-statement block
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_elf_builder : public ast_builder
     {
@@ -284,11 +302,12 @@ namespace ramsey
         // elements
         ast_expression_node* _condition;
         ast_statement_node* _body; // OPTIONAL
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_iterative_statement_builder : public ast_builder
     {
@@ -307,11 +326,12 @@ namespace ramsey
         // elements
         const token* _kind; // 'toss' or 'smash'
         ast_expression_node* _expr; // OPTIONAL used only for 'toss' statement
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_jump_statement_builder : public ast_builder
     {
@@ -382,11 +402,12 @@ namespace ramsey
 
         // elements
         operand _ops[2];
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_assignment_expression_builder : public ast_builder
     {
@@ -402,11 +423,12 @@ namespace ramsey
 
         // elements: the operator is implied
         std::deque<operand> _ops;
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_logical_or_expression_builder : public ast_builder
     {
@@ -422,11 +444,12 @@ namespace ramsey
 
         // elements: the operator is implied
         std::deque<operand> _ops;
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_logical_and_expression_builder : public ast_builder
     {
@@ -443,11 +466,12 @@ namespace ramsey
         // elements
         std::deque<operand> _operands;
         std::deque<const token*> _operators;
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_equality_expression_builder : public ast_builder
     {
@@ -464,11 +488,12 @@ namespace ramsey
         // elements
         std::deque<operand> _operands;
         std::deque<const token*> _operators;
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_relational_expression_builder : public ast_builder
     {
@@ -485,11 +510,12 @@ namespace ramsey
         // elements
         std::deque<operand> _operands;
         std::deque<const token*> _operators;
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_additive_expression_builder : public ast_builder
     {
@@ -506,11 +532,12 @@ namespace ramsey
         // elements
         std::deque<operand> _operands;
         std::deque<const token*> _operators;
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_multiplicative_expression_builder : public ast_builder
     {
@@ -521,19 +548,18 @@ namespace ramsey
     class ast_prefix_expression_node : public ast_expression_node
     {
         friend class ast_prefix_expression_builder;
-    public:
-
     private:
         ast_prefix_expression_node();
 
         // elements
         const token* _operator;
         operand _operand;
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_prefix_expression_builder : public ast_builder
     {
@@ -552,11 +578,12 @@ namespace ramsey
         // elements
         operand _operand; // operand modifying expression list
         ast_expression_node* _expList; // OPTIONAL expression list
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
     class ast_postfix_expression_builder : public ast_builder
     {
@@ -572,11 +599,12 @@ namespace ramsey
 
         // elements
         const token* _tok; // in the AST, a primary expression is only a single token expression
-
+    protected:
         // virtual functions
 #ifdef RAMSEY_DEBUG
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
+        virtual void semantics_impl(stable& symtable) const;
     };
 }
 
