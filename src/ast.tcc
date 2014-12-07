@@ -43,6 +43,8 @@ void ramsey::ast_linked_node<T>::append(T* node)
 template<typename T>
 void ramsey::ast_linked_node<T>::output_at_level(std::ostream& stream,int level) const
 {
+    stream.width(4);
+    stream << get_lineno() << ' ';
     for (int i = 0;i < level;++i)
         stream.put('\t');
     output_impl(stream,level+1);

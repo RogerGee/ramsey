@@ -37,7 +37,7 @@ namespace ramsey
         int linenumber;
         lexer lex;
 
-        // abstract syntax tree
+        // abstract syntax tree (root node)
         ast_node* ast;
 
         // helper functions for parser

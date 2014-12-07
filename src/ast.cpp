@@ -57,6 +57,12 @@ ast_node* ast_builder::pop_node()
     _elems.pop_back();
     return thing.pnode;
 }
+int ast_builder::get_line()
+{
+    int l = _linenos.top();
+    _linenos.pop();
+    return l;
+}
 
 // ast_builder::ast_element
 ast_builder::ast_element::ast_element()
@@ -74,6 +80,7 @@ ast_builder::ast_element::ast_element(ast_node* node)
 
 // ast_node
 ast_node::ast_node()
+    : _lineno(0)
 {
 }
 #ifdef RAMSEY_DEBUG
@@ -83,6 +90,8 @@ void ast_node::output(ostream& stream) const
 }
 void ast_node::output_at_level(ostream& stream,int level) const
 {
+    stream.width(4);
+    stream << _lineno << ' ';
     for (int i = 0;i < level;++i)
         stream.put('\t');
     output_impl(stream,level+1);
@@ -122,6 +131,29 @@ void ast_function_node::output_impl(ostream& stream,int nlevel) const
         _statements->output_at_level(stream,nlevel);
     }
 }
+token_t* ast_function_node::get_argtypes_impl() const
+{
+    // create a dynamically allocated list of parameter types
+    int sz = 0, alloc = 5;
+    token_t* tlist = new token_t[alloc];
+    ast_parameter_node* pnode = _param;
+    while (true) {
+        if (sz >= alloc) { // reallocate
+            token_t* tnew = new token_t[alloc*=2];
+            for (int i = 0;i < sz;++i)
+                tnew[i] = tlist[i];
+            delete[] tlist;
+            tlist = tnew;
+        }
+        if (pnode == NULL) {
+            tlist[sz] = token_invalid; // terminate the list with token_invalid
+            break;
+        }
+        tlist[sz++] = pnode->_typespec->type();
+        pnode = pnode->get_next();
+    }
+    return tlist;
+}
 ast_function_node* ast_function_builder::build()
 {
 #ifdef RAMSEY_DEBUG
@@ -129,8 +161,10 @@ ast_function_node* ast_function_builder::build()
         throw ast_exception("ast_function_builder: element stack was empty");
 #endif
     ast_function_node* node = get_next();
+    node->set_lineno(get_line());
     while ( !is_empty() ) {
         ast_function_node* n = get_next();
+        n->set_lineno(get_line());
         node->append(n);
         node = n;
     }
@@ -160,8 +194,10 @@ ast_parameter_node* ast_parameter_builder::build()
     if ( is_empty() )
         return NULL; // parameter_declaration is potentially nullable
     ast_parameter_node* node = get_next();
+    node->set_lineno(get_line());
     while ( !is_empty() ) {
         ast_parameter_node* n = get_next();
+        n->set_lineno(get_line());
         node->append(n);
         node = n;
     }
@@ -219,6 +255,7 @@ void ast_declaration_statement_node::output_impl(ostream& stream,int nlevel) con
 ast_declaration_statement_node* ast_declaration_statement_builder::build()
 {
     ast_declaration_statement_node* node = new ast_declaration_statement_node;
+    node->set_lineno(get_line());
     node->_initializer = static_cast<ast_expression_node*>(pop_node());
     node->_id = pop_token();
     node->_typespec = pop_token();
@@ -263,6 +300,7 @@ void ast_selection_statement_node::output_impl(ostream& stream,int nlevel) const
 ast_selection_statement_node* ast_selection_statement_builder::build()
 {
     ast_selection_statement_node* node = new ast_selection_statement_node;
+    node->set_lineno(get_line());
     node->_else = static_cast<ast_statement_node*>(pop_node());
     node->_elf = static_cast<ast_elf_node*>(pop_node());
     node->_body = static_cast<ast_statement_node*>(pop_node());
@@ -303,6 +341,7 @@ void ast_elf_node::output_impl(ostream& stream,int nlevel) const
 ast_elf_node* ast_elf_builder::build()
 {
     ast_elf_node* node = new ast_elf_node;
+    node->set_lineno(get_line());
     node->_elf = static_cast<ast_elf_node*>(pop_node());
     node->_body = static_cast<ast_statement_node*>(pop_node());
     node->_condition = static_cast<ast_expression_node*>(pop_node());
@@ -336,6 +375,7 @@ void ast_iterative_statement_node::output_impl(ostream& stream,int nlevel) const
 ast_iterative_statement_node* ast_iterative_statement_builder::build()
 {
     ast_iterative_statement_node* node = new ast_iterative_statement_node;
+    node->set_lineno(get_line());
     node->_body = static_cast<ast_statement_node*>(pop_node());
     node->_condition = static_cast<ast_expression_node*>(pop_node());
     return node;
@@ -364,6 +404,7 @@ void ast_jump_statement_node::output_impl(ostream& stream,int nlevel) const
 ast_jump_statement_node* ast_jump_statement_builder::build()
 {
     ast_jump_statement_node* node = new ast_jump_statement_node;
+    node->set_lineno(get_line());
     if ( is_next_node() )
         node->_expr = static_cast<ast_expression_node*>(pop_node());
     node->_kind = pop_token();
@@ -372,38 +413,38 @@ ast_jump_statement_node* ast_jump_statement_builder::build()
 
 // ast_expression_node, ast_expression_node::operand, ast_expression_builder
 ast_expression_node::ast_expression_node(ast_expression_kind kind)
-    : _kind(kind)
+    : _kind(kind), _type(token_invalid)
 {
+}
+token_t ast_expression_node::get_type(const stable& symtable) const
+{
+    if (_type == token_invalid) // cache the type
+        _type = get_ex_type_impl(symtable);
+    return _type;
 }
 ast_expression_node::operand::operand()
-    : tok_operand(NULL), flag(-1)
+    : node(NULL)
 {
 }
-ast_expression_node::operand::operand(const token* tok)
-    : tok_operand(tok), flag(operand_tok)
+ast_expression_node::operand::operand(const token* tok,int line)
+    : node(new ast_primary_expression_node(tok))
 {
+    node->set_lineno(line);
 }
-ast_expression_node::operand::operand(ast_expression_node* node)
-    : node_operand(node), flag(operand_node)
+ast_expression_node::operand::operand(ast_expression_node* n)
+    : node(n)
 {
 }
 ast_expression_node::operand::~operand()
 {
-    if (node_operand!=NULL && flag==operand_node)
-        delete node_operand;
+    if (node != NULL)
+        delete node;
 }
-#ifdef RAMSEY_DEBUG
-void ast_expression_node::operand::output_at_level(ostream& stream,int level) const
+void ast_expression_node::operand::assign_primary_expr(const token* tok,int line)
 {
-    if (flag == operand_tok) {
-        for (int i = 0;i < level;++i)
-            stream.put('\t');
-        stream << *tok_operand << '\n';
-    }
-    else
-        node_operand->output_at_level(stream,level);
+    node = new ast_primary_expression_node(tok);
+    node->set_lineno(line);
 }
-#endif
 ast_expression_node* ast_expression_builder::build()
 {
     /* if the builder has a token on top of its stack, then
@@ -415,8 +456,11 @@ ast_expression_node* ast_expression_builder::build()
         if (size() != 1)
             throw ast_exception("ast_expression_builder: expected single token in element stack");
 #endif
-        return new ast_primary_expression_node( pop_token() );
+        ast_primary_expression_node* node = new ast_primary_expression_node( pop_token() );
+        node->set_lineno(get_line());
+        return node;
     }
+    // link the nodes together
     ast_expression_node* node = static_cast<ast_expression_node*>(pop_node());
     while ( !is_empty() ) {
         ast_expression_node* n = static_cast<ast_expression_node*>(pop_node());
@@ -436,7 +480,7 @@ void ast_assignment_expression_node::output_impl(ostream& stream,int nlevel) con
 {
     stream << "assignment-expression\n";
     for (short i = 0;i<2;++i)
-        _ops[i].output_at_level(stream,nlevel);
+        _ops[i].node->output_at_level(stream,nlevel);
 }
 #endif
 ast_assignment_expression_node* ast_assignment_expression_builder::build()
@@ -445,16 +489,14 @@ ast_assignment_expression_node* ast_assignment_expression_builder::build()
     if (size() != 2)
         throw ast_exception("ast_assignment_expression_builder: element stack did not contain correct number of elements");
 #endif
+    int line;
     ast_assignment_expression_node* node = new ast_assignment_expression_node;
+    node->set_lineno(line = get_line());
     for (short i = 1;i >= 0;--i) {
-        if ( is_next_token() ) {
-            node->_ops[i].tok_operand = pop_token();
-            node->_ops[i].flag = ast_expression_node::operand::operand_tok;
-        }
-        else {
-            node->_ops[i].node_operand = static_cast<ast_expression_node*>(pop_node());
-            node->_ops[i].flag = ast_expression_node::operand::operand_node;
-        }
+        if ( is_next_token() )
+            node->_ops[i].assign_primary_expr(pop_token(),line);
+        else
+            node->_ops[i].node = static_cast<ast_expression_node*>(pop_node());
     }
     return node;
 }
@@ -469,7 +511,7 @@ void ast_logical_or_expression_node::output_impl(ostream& stream,int nlevel) con
 {
     stream << "logical-or-expression\n";
     for (deque<operand>::const_iterator iter = _ops.begin();iter != _ops.end();++iter)
-        iter->output_at_level(stream,nlevel);
+        iter->node->output_at_level(stream,nlevel);
 }
 #endif
 ast_logical_or_expression_node* ast_logical_or_expression_builder::build()
@@ -478,10 +520,12 @@ ast_logical_or_expression_node* ast_logical_or_expression_builder::build()
     if (size() < 2)
         throw ast_exception("ast_logical_or_expression_builder: element stack did not contain correct number of elements");
 #endif
+    int line;
     ast_logical_or_expression_node* node = new ast_logical_or_expression_node;
+    node->set_lineno(line = get_line());
     while ( !is_empty() ) {
         if ( is_next_token() )
-            node->_ops.emplace_front( pop_token() );
+            node->_ops.emplace_front(pop_token(),line);
         else
             node->_ops.emplace_front( static_cast<ast_expression_node*>(pop_node()) );
     }
@@ -498,7 +542,7 @@ void ast_logical_and_expression_node::output_impl(ostream& stream,int nlevel) co
 {
     stream << "logical-and-expression\n";
     for (deque<operand>::const_iterator iter = _ops.begin();iter != _ops.end();++iter)
-        iter->output_at_level(stream,nlevel);
+        iter->node->output_at_level(stream,nlevel);
 }
 #endif
 ast_logical_and_expression_node* ast_logical_and_expression_builder::build()
@@ -507,10 +551,12 @@ ast_logical_and_expression_node* ast_logical_and_expression_builder::build()
     if (size() < 2)
         throw ast_exception("ast_logical_and_expression_builder: element stack did not contain correct number of elements");
 #endif
+    int line;
     ast_logical_and_expression_node* node = new ast_logical_and_expression_node;
+    node->set_lineno(line = get_line());
     while ( !is_empty() ) {
         if ( is_next_token() )
-            node->_ops.emplace_front( pop_token() );
+            node->_ops.emplace_front(pop_token(),line);
         else
             node->_ops.emplace_front( static_cast<ast_expression_node*>(pop_node()) );
     }
@@ -525,36 +571,36 @@ ast_equality_expression_node::ast_equality_expression_node()
 #ifdef RAMSEY_DEBUG
 void ast_equality_expression_node::output_impl(ostream& stream,int nlevel) const
 {
-    deque<operand>::size_type i = 0, j = 0;
     stream << "equality-expression\n";
-    while (j < _operators.size()) {
-        _operands[i++].output_at_level(stream,nlevel);
-        for (int cnt = 0;cnt < nlevel;++cnt)
-            stream.put('\t');
-        stream << *_operators[j++] << '\n';
-    }
-    _operands[i].output_at_level(stream,nlevel);
+    _operands[0].node->output_at_level(stream,nlevel);
+    for (int cnt = 0;cnt < nlevel;++cnt)
+        stream.put('\t');
+    stream << *_operator << '\n';
+    _operands[1].node->output_at_level(stream,nlevel);
 }
 #endif
 ast_equality_expression_node* ast_equality_expression_builder::build()
 {
 #ifdef RAMSEY_DEBUG
-    if (size() < 2)
+    if (size() != 3)
         throw ast_exception("ast_equality_expression_builder: element stack did not contain correct number of elements");
 #endif
-    bool state = true;
+    int line;
     ast_equality_expression_node* node = new ast_equality_expression_node;
-    while ( !is_empty() ) {
-        if (state) {
-            if ( is_next_token() )
-                node->_operands.emplace_front( pop_token() );
-            else
-                node->_operands.emplace_front( static_cast<ast_expression_node*>(pop_node()) );
-        }
-        else
-            node->_operators.push_front( pop_token() );
-        state = !state;
-    }
+    node->set_lineno(line = get_line());
+    if ( is_next_token() )
+        node->_operands[0].assign_primary_expr(pop_token(),line);
+    else
+        node->_operands[0].node = static_cast<ast_expression_node*>(pop_node());
+#ifdef RAMSEY_DEBUG
+    if ( !is_next_token() )
+        throw ast_exception("ast_equality_expression_builder: expected token for operator");
+#endif
+    node->_operator = pop_token();
+    if ( is_next_token() )
+        node->_operands[1].assign_primary_expr(pop_token(),line);
+    else
+        node->_operands[1].node = static_cast<ast_expression_node*>(pop_node());
     return node;
 }
 
@@ -566,36 +612,36 @@ ast_relational_expression_node::ast_relational_expression_node()
 #ifdef RAMSEY_DEBUG
 void ast_relational_expression_node::output_impl(ostream& stream,int nlevel) const
 {
-    deque<operand>::size_type i = 0, j = 0;
     stream << "relational-expression\n";
-    while (j < _operators.size()) {
-        _operands[i++].output_at_level(stream,nlevel);
-        for (int cnt = 0;cnt < nlevel;++cnt)
-            stream.put('\t');
-        stream << *_operators[j++] << '\n';
-    }
-    _operands[i].output_at_level(stream,nlevel);
+    _operands[0].node->output_at_level(stream,nlevel);
+    for (int cnt = 0;cnt < nlevel;++cnt)
+        stream.put('\t');
+    stream << *_operator << '\n';
+    _operands[1].node->output_at_level(stream,nlevel);
 }
 #endif
 ast_relational_expression_node* ast_relational_expression_builder::build()
 {
 #ifdef RAMSEY_DEBUG
-    if (size() < 2)
+    if (size() != 3)
         throw ast_exception("ast_relational_expression_builder: element stack did not contain correct number of elements");
 #endif
-    bool state = true;
+    int line;
     ast_relational_expression_node* node = new ast_relational_expression_node;
-    while ( !is_empty() ) {
-        if (state) {
-            if ( is_next_token() )
-                node->_operands.emplace_front( pop_token() );
-            else
-                node->_operands.emplace_front( static_cast<ast_expression_node*>(pop_node()) );
-        }
-        else
-            node->_operators.push_front( pop_token() );
-        state = !state;
-    }
+    node->set_lineno(line = get_line());
+    if ( is_next_token() )
+        node->_operands[0].assign_primary_expr(pop_token(),line);
+    else
+        node->_operands[0].node = static_cast<ast_expression_node*>(pop_node());
+#ifdef RAMSEY_DEBUG
+    if ( !is_next_token() )
+        throw ast_exception("ast_relational_expression_builder: expected token for operator");
+#endif
+    node->_operator = pop_token();
+    if ( is_next_token() )
+        node->_operands[1].assign_primary_expr(pop_token(),line);
+    else
+        node->_operands[1].node = static_cast<ast_expression_node*>(pop_node());
     return node;
 }
 
@@ -610,26 +656,28 @@ void ast_additive_expression_node::output_impl(ostream& stream,int nlevel) const
     deque<operand>::size_type i = 0, j = 0;
     stream << "additive-expression\n";
     while (j < _operators.size()) {
-        _operands[i++].output_at_level(stream,nlevel);
+        _operands[i++].node->output_at_level(stream,nlevel);
         for (int cnt = 0;cnt < nlevel;++cnt)
             stream.put('\t');
         stream << *_operators[j++] << '\n';
     }
-    _operands[i].output_at_level(stream,nlevel);
+    _operands[i].node->output_at_level(stream,nlevel);
 }
 #endif
 ast_additive_expression_node* ast_additive_expression_builder::build()
 {
 #ifdef RAMSEY_DEBUG
-    if (size() < 2)
+    if (size() < 3)
         throw ast_exception("ast_additive_expression_builder: element stack did not contain correct number of elements");
 #endif
+    int line;
     bool state = true;
     ast_additive_expression_node* node = new ast_additive_expression_node;
+    node->set_lineno(line = get_line());
     while ( !is_empty() ) {
         if (state) {
             if ( is_next_token() )
-                node->_operands.emplace_front( pop_token() );
+                node->_operands.emplace_front(pop_token(),line);
             else
                 node->_operands.emplace_front( static_cast<ast_expression_node*>(pop_node()) );
         }
@@ -651,26 +699,28 @@ void ast_multiplicative_expression_node::output_impl(ostream& stream,int nlevel)
     deque<operand>::size_type i = 0, j = 0;
     stream << "multiplicative-expression\n";
     while (j < _operators.size()) {
-        _operands[i++].output_at_level(stream,nlevel);
+        _operands[i++].node->output_at_level(stream,nlevel);
         for (int cnt = 0;cnt < nlevel;++cnt)
             stream.put('\t');
         stream << *_operators[j++] << '\n';
     }
-    _operands[i].output_at_level(stream,nlevel);
+    _operands[i].node->output_at_level(stream,nlevel);
 }
 #endif
 ast_multiplicative_expression_node* ast_multiplicative_expression_builder::build()
 {
 #ifdef RAMSEY_DEBUG
-    if (size() < 2)
+    if (size() < 3)
         throw ast_exception("ast_multiplicative_expression_builder: element stack did not contain correct number of elements");
 #endif
+    int line;
     bool state = true;
     ast_multiplicative_expression_node* node = new ast_multiplicative_expression_node;
+    node->set_lineno(line = get_line());
     while ( !is_empty() ) {
         if (state) {
             if ( is_next_token() )
-                node->_operands.emplace_front( pop_token() );
+                node->_operands.emplace_front(pop_token(),line);
             else
                 node->_operands.emplace_front( static_cast<ast_expression_node*>(pop_node()) );
         }
@@ -690,7 +740,7 @@ ast_prefix_expression_node::ast_prefix_expression_node()
 void ast_prefix_expression_node::output_impl(ostream& stream,int nlevel) const
 {
     stream << "prefix-expression:op=" << *_operator << '\n';
-    _operand.output_at_level(stream,nlevel);
+    _operand.node->output_at_level(stream,nlevel);
 }
 #endif
 ast_prefix_expression_node* ast_prefix_expression_builder::build()
@@ -699,15 +749,13 @@ ast_prefix_expression_node* ast_prefix_expression_builder::build()
     if (size() != 2)
         throw ast_exception("ast_prefix_expression_builder: element stack did not contain correct number of elements");
 #endif
+    int line;
     ast_prefix_expression_node* node = new ast_prefix_expression_node;
-    if ( is_next_token() ) {
-        node->_operand.tok_operand = pop_token();
-        node->_operand.flag = ast_expression_node::operand::operand_tok;
-    }
-    else {
-        node->_operand.node_operand = static_cast<ast_expression_node*>(pop_node());
-        node->_operand.flag = ast_expression_node::operand::operand_node;
-    }
+    node->set_lineno(line = get_line());
+    if ( is_next_token() )
+        node->_operand.assign_primary_expr(pop_token(),line);
+    else
+        node->_operand.node = static_cast<ast_expression_node*>(pop_node());
     node->_operator = pop_token();
     return node;
 }
@@ -726,7 +774,7 @@ ast_postfix_expression_node::~ast_postfix_expression_node()
 void ast_postfix_expression_node::output_impl(ostream& stream,int nlevel) const
 {
     stream << "postfix-expression\n";
-    _operand.output_at_level(stream,nlevel);
+    _op.node->output_at_level(stream,nlevel);
     if (_expList != NULL) {
         output_annot(stream,nlevel,"parameter-list");
         _expList->output_at_level(stream,nlevel);
@@ -739,17 +787,15 @@ ast_postfix_expression_node* ast_postfix_expression_builder::build()
     if (size() != 2)
         throw ast_exception("ast_postfix_expression_builder: element stack did not contain correct number of elements");
 #endif
+    int line;
     ast_postfix_expression_node* node = new ast_postfix_expression_node;
+    node->set_lineno(line = get_line());
     node->_expList = static_cast<ast_expression_node*>(pop_node());
     // operand is either a token or a node
-    if ( is_next_token() ) {
-        node->_operand.tok_operand = pop_token();
-        node->_operand.flag = ast_expression_node::operand::operand_tok;
-    }
-    else {
-        node->_operand.node_operand = static_cast<ast_expression_node*>(pop_node());
-        node->_operand.flag = ast_expression_node::operand::operand_node;
-    }
+    if ( is_next_token() )
+        node->_op.assign_primary_expr(pop_token(),line);
+    else
+        node->_op.node = static_cast<ast_expression_node*>(pop_node());
     return node;
 }
 

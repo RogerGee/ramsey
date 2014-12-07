@@ -1,0 +1,10 @@
+# semantic error: type mismatch for logical operators
+
+fun main()
+    in x <- 5 + 7*8
+    
+    if (x < 5 and x < 10 or x)
+        toss 1
+    endif
+endfun
+

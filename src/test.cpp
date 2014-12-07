@@ -1,9 +1,8 @@
 /* test.cpp - this module will server as the entry point to a program
-   that tests some feature of the Ramsey compiler; try to build with
-   RAMSEY_DEBUG macro defined (otherwise you will get compile errors) */
-#include "lexer.h"
+   that tests the compilation stages of the Ramsey compiler; try to
+   build with the RAMSEY_DEBUG macro defined (otherwise you will get
+   compile errors) */
 #include "parser.h"
-#include "ast.h"
 #include <iostream>
 using namespace std;
 using namespace ramsey;
@@ -17,13 +16,20 @@ int main(int argc,const char* argv[])
 
     // attempt to compile the file, print out intermediate results
     try {
+        // parser will open the file, lex it and generate an abstract syntax tree
         parser parse(argv[1]);
         const lexer& lex = parse.get_lexer();
         const ast_node* ast = parse.get_ast();
+        stable symtable;
 
+        // display intermediate results
         lex.output(cout);
         cout << "\nParsed successfully\n\n[Abstract Syntax Tree]\n";
-        ast->output(cout);
+        ast->output(cout); cout << '\n';
+        symtable.addScope(); // add global scope
+        ast->check_semantics(symtable);
+        symtable.remScope();
+        cout << "Passed semantic checks\n";
     }
     catch (lexer_error ex) {
         cerr << argv[0] << ": scan error: " << ex.what() << endl;

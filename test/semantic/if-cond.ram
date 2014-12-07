@@ -1,0 +1,9 @@
+# semantic error: incorrect type for if-statement condition
+
+fun main()
+    in a <- 5+5
+    
+    if (a)
+        toss 1
+    endif
+endfun

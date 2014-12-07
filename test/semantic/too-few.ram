@@ -1,0 +1,11 @@
+# semantic error: too few arguments to function
+
+fun main()
+    in j
+    
+    j <- do_stuff(5)
+endfun
+
+fun do_stuff(in a,in b,in c)
+    toss a+b+c
+endfun

@@ -1,11 +1,11 @@
-# this function should pass inspection
+# semantic error: bad assignment
 
 fun myfun() as boo
     in i
     i <- 5
-    if ((i<-5)<5)
-        toss true
-    elf ((i <--5)<9)
+    if (i<-false)
+        toss i
+    elf (i <--5)
         toss -1*i
     endif
 

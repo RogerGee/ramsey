@@ -2,7 +2,7 @@
 
 fun program()
     in x <- 42
-    big y <- 4 + 4
+    small y <- 4 + 4
     big bob <- y + x
 
     in thing<--5

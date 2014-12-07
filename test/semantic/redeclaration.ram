@@ -1,0 +1,12 @@
+# semantic error: redeclaration
+
+fun add(in a, in b) as in
+    toss a + b
+endfun
+
+fun program(in a,in b)
+    in a
+    in b
+
+    toss add(a,b)
+endfun

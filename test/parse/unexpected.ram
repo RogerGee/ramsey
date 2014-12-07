@@ -1,6 +1,4 @@
-# errors.ram
-# file for testing error messages
-# break things here!
+# parse error: unexpected token in expression
 
 fun myfun(in hi) as boo
     in lol <- hi boo

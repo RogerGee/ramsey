@@ -1,0 +1,5 @@
+# lexer error: unknown keyword
+
+func main()
+
+endfun

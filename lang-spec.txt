@@ -207,18 +207,18 @@ lexical conventions defined in the previous section (B)
         <relational-expression> <equality-expression-opt>
 
 <equality-expression-opt>:
-        "=" <relational-expression> <equality-expression-opt>
-        "!=" <relational-expression> <equality-expression-opt>
+        "=" <relational-expression>
+        "!=" <relational-expression>
         ""
 
 <relational-expression>:
         <additive-expression> <relational-expression-opt>
 
 <relational-expression-opt>:
-        "<" <additive-expression> <relational-expression-opt>
-        ">" <additive-expression> <relational-expression-opt>
-        "<=" <additive-expression> <relational-expression-opt>
-        ">=" <additive-expression> <relational-expression-opt>
+        "<" <additive-expression>
+        ">" <additive-expression>
+        "<=" <additive-expression>
+        ">=" <additive-expression>
         ""
 
 <additive-expression>:

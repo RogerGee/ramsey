@@ -53,7 +53,7 @@ namespace ramsey
         token_comma, // ','
 
         // keywords
-        token_in, // the typename 'in' (meaning integer; synonym for 'big')
+        token_in, // the typename 'in' (meaning integer; interpreted either as 'big' or 'small' given context)
         token_big, // the typename 'big' (meaning big integer)
         token_small, // the typename 'small' (meaning small integer)
         token_boo, // the typename 'boo' (meaning boolean)

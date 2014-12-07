@@ -23,6 +23,13 @@ namespace ramsey
         const std::string _err;
     };
 
+    // generic exception for internal assertions
+    class ramsey_exception : public std::exception
+    {
+    public:
+        virtual const char* what() const throw()
+        { return "An assertion exception was thrown"; }
+    };
 }
 
 #endif

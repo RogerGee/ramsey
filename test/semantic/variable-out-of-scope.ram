@@ -1,0 +1,10 @@
+# semantic error: variable out of scope
+
+fun main()
+
+    if (true)
+        in i
+    endif
+    
+    i <- 4
+endfun

@@ -6,8 +6,8 @@ fun add(in a, in b) as in
 endfun
 
 fun program(in a,in b)
-    in a
-    in b
+    in c <- a*2/2
+    in d <- b*100/100
 
-    toss add(a,b)
+    toss add(c,d)
 endfun

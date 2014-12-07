@@ -76,6 +76,7 @@ void parser::function_list()
 
 void parser::function()
 {
+    builders.top()->add_line(linenumber);
     function_declaration();
     // parse statement list and add statements to AST
     ast_statement_builder statementBuilder;
@@ -153,6 +154,7 @@ void parser::parameter_declaration()
 
 void parser::parameter()
 {
+    builders.top()->add_line(linenumber);
     type_name();
     if (lex.curtok().type() == token_id) {
         builders.top()->add_token(&lex.curtok());
@@ -192,6 +194,7 @@ void parser::statement()
         || lex.curtok().type() == token_boo) {
         ast_declaration_statement_builder declStatBuilder;
         builders.push(&declStatBuilder);
+        declStatBuilder.add_line(linenumber);
         declaration_statement();
         builders.pop();
         builders.top()->add_node( declStatBuilder.build() );
@@ -203,6 +206,7 @@ void parser::statement()
         || lex.curtok().type() == token_oparen) {
         ast_expression_statement_builder expStatBuilder;
         builders.push(&expStatBuilder);
+        expStatBuilder.add_line(linenumber);
         expression_statement();
         builders.pop();
         builders.top()->add_node( expStatBuilder.build() );
@@ -210,6 +214,7 @@ void parser::statement()
     else if (lex.curtok().type() == token_if) {
         ast_selection_statement_builder selBuilder;
         builders.push(&selBuilder);
+        selBuilder.add_line(linenumber);
         selection_statement();
         builders.pop();
         builders.top()->add_node( selBuilder.build() );
@@ -217,6 +222,7 @@ void parser::statement()
     else if (lex.curtok().type() == token_while) {
         ast_iterative_statement_builder iterBuilder;
         builders.push(&iterBuilder);
+        iterBuilder.add_line(linenumber);
         iterative_statement();
         builders.pop();
         builders.top()->add_node( iterBuilder.build() );
@@ -224,6 +230,7 @@ void parser::statement()
     else if (lex.curtok().type() == token_toss || lex.curtok().type() == token_smash) {
         ast_jump_statement_builder jumpBuilder;
         builders.push(&jumpBuilder);
+        jumpBuilder.add_line(linenumber);
         jump_statement();
         builders.pop();
         builders.top()->add_node( jumpBuilder.build() );
@@ -289,6 +296,7 @@ void parser::initializer()
         // parse the expression and put it in the AST
         ast_expression_builder expBuilder;
         builders.push(&expBuilder);
+        expBuilder.add_line(linenumber);
         expression();
         builders.pop();
         builders.top()->add_node( expBuilder.build() );
@@ -338,6 +346,7 @@ void parser::expression_list()
     // a single list item for the expression list
     ast_expression_builder expBuilder;
     builders.push(&expBuilder);
+    expBuilder.add_line(linenumber);
     expression();
     builders.pop();
     builders.top()->add_node( expBuilder.build() );
@@ -375,6 +384,7 @@ void parser::assignment_expression_opt()
 {
     if (lex.curtok().type() == token_assign)
     {
+        builders.top()->add_line(linenumber);
         assignment_operator();
         assignment_expression();
     }
@@ -403,6 +413,7 @@ void parser::logical_or_expression_opt()
 {
     if (lex.curtok().type() == token_or)
     {
+        builders.top()->add_line(linenumber);
         ++lex;
         logical_and_expression();
         logical_or_expression_opt();
@@ -432,6 +443,7 @@ void parser::logical_and_expression_opt()
 {
     if (lex.curtok().type() == token_and)
     {
+        builders.top()->add_line(linenumber);
         ++lex;
         equality_expression();
         logical_and_expression_opt();
@@ -462,11 +474,11 @@ void parser::equality_expression_opt()
 {
     if (lex.curtok().type()==token_equal || lex.curtok().type()==token_nequal)
     {
+        builders.top()->add_line(linenumber);
         // keep equality operator in AST
         builders.top()->add_token(&lex.curtok());
         ++lex;
         relational_expression();
-        equality_expression_opt();
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
         lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
@@ -495,11 +507,11 @@ void parser::relational_expression_opt()
     if (lex.curtok().type() == token_less || lex.curtok().type()==token_greater
         || lex.curtok().type()==token_le || lex.curtok().type()==token_ge)
     {
+        builders.top()->add_line(linenumber);
         // keep relational operator in the AST
         builders.top()->add_token(&lex.curtok());
         ++lex;
         additive_expression();
-        relational_expression_opt();
     }
     else if (lex.curtok().type() == token_cparen || lex.curtok().type() == token_eol ||
         lex.curtok().type() == token_comma || lex.curtok().type() == token_assign ||
@@ -528,6 +540,7 @@ void parser::additive_expression_opt()
 {
     if (lex.curtok().type()==token_add || lex.curtok().type()==token_subtract)
     {
+        builders.top()->add_line(linenumber);
         // keep additive operator in the AST
         builders.top()->add_token(&lex.curtok());
         ++lex;
@@ -562,6 +575,7 @@ void parser::multiplicative_expression_opt()
 {
     if (lex.curtok().type()==token_multiply || lex.curtok().type()==token_divide || lex.curtok().type()==token_mod)
     {
+        builders.top()->add_line(linenumber);
         // keep multiplicative operator in the AST
         builders.top()->add_token(&lex.curtok());
         ++lex;
@@ -590,6 +604,7 @@ void parser::prefix_expression()
     {
         ast_prefix_expression_builder prefixBuilder;
         prefixBuilder.add_token(&lex.curtok());
+        prefixBuilder.add_line(linenumber);
         ++lex;
         builders.push(&prefixBuilder);
         prefix_expression();
@@ -605,6 +620,7 @@ void parser::postfix_expression()
     // build a postfix expression if it exists
     ast_postfix_expression_builder postfixBuilder;
     builders.push(&postfixBuilder);
+    postfixBuilder.add_line(linenumber);
     primary_expression();
     postfix_expression_opt();
     builders.pop();
@@ -647,6 +663,7 @@ void parser::function_call()
     }
     ast_expression_builder expBuild;
     builders.push(&expBuild);
+    expBuild.add_line(linenumber);
     expression_list();
     builders.pop();
     builders.top()->add_node( expBuild.build() );
@@ -666,6 +683,7 @@ void parser::primary_expression()
         ++lex;
         ast_expression_builder expBuilder;
         builders.push(&expBuilder);
+        expBuilder.add_line(linenumber);
         expression();
         builders.pop();
         builders.top()->add_node( expBuilder.build() );
@@ -687,6 +705,7 @@ void parser::selection_statement()
         throw parser_error("line %d: '(' must follow 'if'", linenumber);
     ast_expression_builder expBuilder;
     builders.push(&expBuilder);
+    expBuilder.add_line(linenumber);
     expression();
     builders.pop();
     builders.top()->add_node( expBuilder.build() );
@@ -702,7 +721,7 @@ void parser::selection_statement()
 
 void parser::if_body()
 {
-    ast_statement_builder statBuilder;
+    ast_statement_builder statBuilder; // doesn't require line number information
     builders.push(&statBuilder);
     statement_list();
     builders.pop();
@@ -710,6 +729,7 @@ void parser::if_body()
     // build another selection statement node to handle elf-clause if it exists
     ast_elf_builder elfBuilder;
     builders.push(&elfBuilder);
+    elfBuilder.add_line(linenumber);
     elf_body();
     builders.pop();
     builders.top()->add_node(elfBuilder.is_empty() ? NULL : elfBuilder.build());
@@ -726,6 +746,7 @@ void parser::elf_body()
             throw parser_error("line %d: expected '(' after 'elf'", linenumber);
         ast_expression_builder expBuild;
         builders.push(&expBuild);
+        expBuild.add_line(linenumber);
         expression();
         builders.pop();
         builders.top()->add_node( expBuild.build() );
@@ -782,6 +803,7 @@ void parser::iterative_statement()
         throw parser_error("line %d: expected '(' after iterative", linenumber);
     ast_expression_builder expBuilder;
     builders.push(&expBuilder);
+    expBuilder.add_line(linenumber);
     expression();
     builders.pop();
     builders.top()->add_node( expBuilder.build() );
@@ -812,6 +834,7 @@ void parser::jump_statement()
         ++lex;
         ast_expression_builder expBuilder;
         builders.push(&expBuilder);
+        expBuilder.add_line(linenumber);
         expression_list();
         builders.pop();
         builders.top()->add_node( expBuilder.build() );
