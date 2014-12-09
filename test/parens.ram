@@ -1,0 +1,12 @@
+# demonstrate nested parentheses
+
+fun main()
+    in a
+    in b
+    in c
+    
+    a <- ((((((((((10+100))))))))))
+    
+    c <- 5 + (5 + 9 * 7) * (5+5)
+endfun
+

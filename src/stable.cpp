@@ -6,13 +6,30 @@ using namespace ramsey;
 // symbol
 
 symbol::symbol()
-    : _argtypes(NULL)
+    : _argtypes(NULL), _offset(0)
 {
 }
 symbol::~symbol()
 {
     if (_argtypes != NULL)
         delete[] _argtypes;
+}
+// symbol::match_parameters is defined in 'semantics.cpp'
+int symbol::get_offset() const
+{
+#ifdef RAMSEY_DEBUG
+    if (get_kind_impl() != skind_variable)
+        throw ramsey_exception();
+#endif
+    return _offset;
+}
+void symbol::set_offset(int offset)
+{
+#ifdef RAMSEY_DEBUG
+    if (get_kind_impl() != skind_variable)
+        throw ramsey_exception();
+#endif
+    _offset = offset;
 }
 
 bool ramsey::operator ==(const symbol& a,const symbol& b)

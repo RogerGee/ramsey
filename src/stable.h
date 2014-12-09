@@ -38,14 +38,20 @@ namespace ramsey
 
         // semantic analysis
         match_parameters_result match_parameters(const token_t* kinds,int cnt) const;
+
+        // code generation
+        int get_offset() const;
+        void set_offset(int);
     private:
-        mutable token_t* _argtypes; // cache parameter list (allocated on heap)
+        // provide symbol decoration attributes
+        mutable token_t* _argtypes; // function: cache parameter list (allocated on heap); variable: NULL
+        int _offset; // variable: offset from base pointer; function: unused
 
         // virtual interface
         virtual const char* get_name_impl() const = 0;
         virtual token_t get_type_impl() const = 0;
         virtual skind get_kind_impl() const = 0;
-        virtual token_t* get_argtypes_impl() const { throw false; }
+        virtual token_t* get_argtypes_impl() const { throw ramsey_exception(); }
     };
 
     bool operator==(const symbol&, const symbol&);

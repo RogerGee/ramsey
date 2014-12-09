@@ -4,6 +4,7 @@
 #include "ramsey-error.h" // gets <ostream>, <string>
 #include "lexer.h"
 #include "stable.h"
+#include "codegen.h"
 #include <deque>
 #include <stack>
 
@@ -86,7 +87,8 @@ namespace ramsey
 
         void check_semantics(stable& symtable) const // perform semantic analysis on the node; a scope should already exist in 'symtable'
         { semantics_impl(symtable); }
-        // generate code
+        void generate_code(stable& symtable,code_generator& generator) const // generate ASM code on the node; a scope should already exist in 'symtable'
+        { codegen_impl(symtable,generator); }
 
         int get_lineno() const
         { return _lineno; }
@@ -110,7 +112,7 @@ namespace ramsey
 
         // virtual interface
         virtual void semantics_impl(stable& symtable) const = 0; // perform semantic analysis
-        // virtual code generation
+        virtual void codegen_impl(stable& symtable,code_generator&) const = 0; // generate assembly code
     };
 
     // provide a generic node that can form a linked-list; any construct
@@ -164,6 +166,7 @@ namespace ramsey
         virtual skind get_kind_impl() const
         { return skind_function; }
         virtual token_t* get_argtypes_impl() const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_function_builder : public ast_builder
     {
@@ -196,6 +199,7 @@ namespace ramsey
         { return _typespec->type(); }
         virtual skind get_kind_impl() const
         { return skind_variable; }
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_parameter_builder : public ast_builder
     {
@@ -256,6 +260,7 @@ namespace ramsey
         { return _typespec->type(); }
         virtual skind get_kind_impl() const
         { return skind_variable; }
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_declaration_statement_builder : public ast_builder
     {
@@ -287,6 +292,7 @@ namespace ramsey
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
         virtual void semantics_impl(stable& symtable) const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_selection_statement_builder : public ast_builder
     {
@@ -312,6 +318,7 @@ namespace ramsey
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
         virtual void semantics_impl(stable& symtable) const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_elf_builder : public ast_builder
     {
@@ -336,6 +343,7 @@ namespace ramsey
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
         virtual void semantics_impl(stable& symtable) const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_iterative_statement_builder : public ast_builder
     {
@@ -360,6 +368,7 @@ namespace ramsey
         virtual void output_impl(std::ostream&,int nlevel) const;
 #endif
         virtual void semantics_impl(stable& symtable) const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_jump_statement_builder : public ast_builder
     {
@@ -438,6 +447,7 @@ namespace ramsey
 #endif
         virtual void semantics_impl(stable& symtable) const;
         virtual token_t get_ex_type_impl(const stable&) const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_assignment_expression_builder : public ast_builder
     {
@@ -460,6 +470,7 @@ namespace ramsey
 #endif
         virtual void semantics_impl(stable& symtable) const;
         virtual token_t get_ex_type_impl(const stable&) const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_logical_or_expression_builder : public ast_builder
     {
@@ -482,6 +493,7 @@ namespace ramsey
 #endif
         virtual void semantics_impl(stable& symtable) const;
         virtual token_t get_ex_type_impl(const stable&) const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_logical_and_expression_builder : public ast_builder
     {
@@ -505,6 +517,7 @@ namespace ramsey
 #endif
         virtual void semantics_impl(stable& symtable) const;
         virtual token_t get_ex_type_impl(const stable&) const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_equality_expression_builder : public ast_builder
     {
@@ -528,6 +541,7 @@ namespace ramsey
 #endif
         virtual void semantics_impl(stable& symtable) const;
         virtual token_t get_ex_type_impl(const stable&) const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_relational_expression_builder : public ast_builder
     {
@@ -551,6 +565,7 @@ namespace ramsey
 #endif
         virtual void semantics_impl(stable& symtable) const;
         virtual token_t get_ex_type_impl(const stable&) const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_additive_expression_builder : public ast_builder
     {
@@ -574,6 +589,7 @@ namespace ramsey
 #endif
         virtual void semantics_impl(stable& symtable) const;
         virtual token_t get_ex_type_impl(const stable&) const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_multiplicative_expression_builder : public ast_builder
     {
@@ -597,6 +613,7 @@ namespace ramsey
 #endif
         virtual void semantics_impl(stable& symtable) const;
         virtual token_t get_ex_type_impl(const stable&) const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_prefix_expression_builder : public ast_builder
     {
@@ -622,6 +639,7 @@ namespace ramsey
 #endif
         virtual void semantics_impl(stable& symtable) const;
         virtual token_t get_ex_type_impl(const stable&) const;
+        virtual void codegen_impl(stable& symtable,code_generator&) const;
     };
     class ast_postfix_expression_builder : public ast_builder
     {
@@ -639,6 +657,8 @@ namespace ramsey
         { return _tok->type() == token_id; }
         const char* name() const
         { return _tok->source_string(); }
+        const char* value() const
+        { return _tok->source_string(); }
     private:
         // elements
         const token* _tok; // in the AST, a primary expression is only a single token expression
@@ -649,6 +669,8 @@ namespace ramsey
 #endif
         virtual void semantics_impl(stable& symtable) const;
         virtual token_t get_ex_type_impl(const stable&) const;
+        virtual void codegen_impl(stable&,code_generator&) const
+        { throw ramsey_exception(); }
     };
 }
 

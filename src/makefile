@@ -33,16 +33,17 @@ endif
 
 # header file dependencies
 RAMSEY_ERROR_H = ramsey-error.h
+CODEGEN_H = codegen.h
 LEXER_H = lexer.h $(RAMSEY_ERROR_H)
 STABLE_H = stable.h $(LEXER_H)
 AST_H = ast.h ast.tcc $(RAMSEY_ERROR_H) $(LEXER_H) $(STABLE_H)
 PARSER_H = parser.h $(LEXER_H) $(AST_H)
 
 # define all header files for testing
-ALL_HEADER_FILES = lexer.h ramsey-error.h parser.h ast.h ast.tcc stable.h
+ALL_HEADER_FILES = lexer.h ramsey-error.h parser.h ast.h ast.tcc stable.h codegen.h
 
 # object code files
-OBJECTS = lexer.o parser.o ast.o ramsey-error.o stable.o semantics.o
+OBJECTS = lexer.o parser.o ast.o ramsey-error.o stable.o semantics.o codegen.o
 # add optional object code files depending on configuration
 ifeq ($(MAKECMDGOALS),test)
 OBJECTS := $(OBJECTS) test.o
@@ -71,6 +72,8 @@ $(OBJDIR)/stable.o: stable.cpp $(STABLE_H)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/stable.o stable.cpp
 $(OBJDIR)/semantics.o: semantics.cpp $(AST_H)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/semantics.o semantics.cpp
+$(OBJDIR)/codegen.o: codegen.cpp $(CODEGEN_H) $(AST_H)
+	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/codegen.o codegen.cpp
 $(OBJDIR)/test.o: test.cpp $(ALL_HEADER_FILES)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/test.o test.cpp
 

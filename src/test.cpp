@@ -21,6 +21,7 @@ int main(int argc,const char* argv[])
         const lexer& lex = parse.get_lexer();
         const ast_node* ast = parse.get_ast();
         stable symtable;
+        code_generator codegen(cout);
 
         // display intermediate results
         lex.output(cout);
@@ -29,7 +30,10 @@ int main(int argc,const char* argv[])
         symtable.addScope(); // add global scope
         ast->check_semantics(symtable);
         symtable.remScope();
-        cout << "Passed semantic checks\n";
+        cout << "Passed semantic checks\n\n[Code Generation: Intel x86]\n";
+        symtable.addScope();
+        ast->generate_code(symtable,codegen);
+        symtable.remScope();
     }
     catch (lexer_error ex) {
         cerr << argv[0] << ": scan error: " << ex.what() << endl;

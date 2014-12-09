@@ -50,7 +50,8 @@ symbol::match_parameters_result symbol::match_parameters(const token_t* kinds,in
     for (int i = 0;i < cnt;++i,++p) {
         if (*p == token_invalid)
             return match_too_many;
-        if ( !semantic_type_equality(*p,kinds[i]) )
+        // match 
+        if (!semantic_type_equality(*p,kinds[i]) && (kinds[i]!=token_small || *p!=token_big))
             b = false;
     }
     if (*p == token_invalid)
