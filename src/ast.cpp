@@ -416,6 +416,14 @@ ast_expression_node::ast_expression_node(ast_expression_kind kind)
     : _kind(kind), _type(token_invalid)
 {
 }
+token_t ast_expression_node::get_type() const
+{
+#ifdef RAMSEY_DEBUG
+    if (_type == token_invalid)
+        throw ramsey_exception();
+#endif
+    return _type;
+}
 token_t ast_expression_node::get_type(const stable& symtable) const
 {
     if (_type == token_invalid) // cache the type

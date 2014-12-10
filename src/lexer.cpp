@@ -209,13 +209,17 @@ lexer lexer::operator ++(int)
 #ifdef RAMSEY_DEBUG
 void lexer::output(ostream& stream) const
 {
-    int i = 1;
-    for (vector<token>::const_iterator iter = _stream.begin();iter != _stream.end();++iter) {
-        stream << iter->to_string();
-        if (i++%5 == 0)
-            stream << ",\n";
-        else
-            stream << ", ";
+    vector<token>::const_iterator iter = _stream.begin();
+    if (iter != _stream.end()) {
+        int i = 1;
+        stream << *iter;
+        for (;iter != _stream.end();++iter) {
+            if (i++%5 == 0)
+                stream << ",\n";
+            else
+                stream << ", ";
+            stream << *iter;
+        }
     }
 }
 #endif

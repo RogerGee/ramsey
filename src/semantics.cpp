@@ -96,16 +96,17 @@ void ast_parameter_node::semantics_impl(stable& symtable) const
 
 void ast_declaration_statement_node::semantics_impl(stable& symtable) const
 {
-    if ( !symtable.add(this) )
-        throw semantic_error("line %d: can't redeclare variable; name '%s' already in use",get_lineno(),_id->source_string());
+    // do visitor pattern
     if (_initializer != NULL) {
-        // do visitor pattern
         _initializer->check_semantics(symtable);
         // check types
-        if ( !semantic_type_equality(_typespec->type(),_initializer->get_type(symtable)) )
+        token_t left = _typespec->type(), right = _initializer->get_type(symtable);
+        if (!semantic_type_equality(left,right) && (right!=token_small || left!=token_big))
             throw semantic_error("line %d: declaration requires initializer of type '%s', not '%s'",get_lineno(),
                 semantic_type_name(_typespec->type()),semantic_type_name(_initializer->get_type(symtable)));
     }
+    if ( !symtable.add(this) )
+        throw semantic_error("line %d: can't redeclare variable; name '%s' already in use",get_lineno(),_id->source_string());
 }
 
 void ast_selection_statement_node::semantics_impl(stable& symtable) const

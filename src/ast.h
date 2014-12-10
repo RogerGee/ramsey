@@ -398,6 +398,7 @@ namespace ramsey
 
         // determine the type to which the expression will evaluate; the
         // symbol table is needed in some cases to determine symbol types
+        token_t get_type() const;
         token_t get_type(const stable& symtable) const;
 
         // get a flag representing what kind of expression the node represents;
@@ -420,6 +421,8 @@ namespace ramsey
         private:
             operand(const operand&);
         };
+
+        static const char* load_operand(const operand&,stable&,code_generator&,bool alloc = false);
     private:
         ast_expression_kind _kind; // decorate what kind of expression node this is
         mutable token_t _type;
@@ -669,8 +672,7 @@ namespace ramsey
 #endif
         virtual void semantics_impl(stable& symtable) const;
         virtual token_t get_ex_type_impl(const stable&) const;
-        virtual void codegen_impl(stable&,code_generator&) const
-        { throw ramsey_exception(); }
+        virtual void codegen_impl(stable&,code_generator&) const;
     };
 }
 

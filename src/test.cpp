@@ -24,8 +24,9 @@ int main(int argc,const char* argv[])
         code_generator codegen(cout);
 
         // display intermediate results
+        cout << "[Lexical Tokens]\n";
         lex.output(cout);
-        cout << "\nParsed successfully\n\n[Abstract Syntax Tree]\n";
+        cout << "\n\nParsed successfully\n\n[Abstract Syntax Tree]\n";
         ast->output(cout); cout << '\n';
         symtable.addScope(); // add global scope
         ast->check_semantics(symtable);
