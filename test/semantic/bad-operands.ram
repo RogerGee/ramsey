@@ -1,0 +1,8 @@
+# semantic error: bad operands
+
+fun myfun() as boo
+    in i
+    i <- 5 + true
+
+    toss true
+endfun

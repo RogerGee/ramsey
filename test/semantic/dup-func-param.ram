@@ -1,0 +1,5 @@
+# semantic error: too many arguments to function
+
+fun stuff(in x, in x)
+    toss x
+endfun

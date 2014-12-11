@@ -1,0 +1,5 @@
+# semantic error: bad assignment
+
+fun myfun() as in
+    toss (not (not (not not true)))
+endfun
