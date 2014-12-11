@@ -19,7 +19,7 @@ int symbol::get_offset() const
 {
 #ifdef RAMSEY_DEBUG
     if (get_kind_impl() != skind_variable)
-        throw ramsey_exception();
+        throw ramsey_exception("symbol::get_offset()");
 #endif
     return _offset;
 }
@@ -27,7 +27,7 @@ void symbol::set_offset(int offset)
 {
 #ifdef RAMSEY_DEBUG
     if (get_kind_impl() != skind_variable)
-        throw ramsey_exception();
+        throw ramsey_exception("symbol::set_offset()");
 #endif
     _offset = offset;
 }
@@ -40,7 +40,7 @@ bool ramsey::operator ==(const symbol& a,const symbol& b)
 // stable
 
 stable::stable()
-    : func(NULL)
+    : func(NULL), loop(0)
 {
 }
 
@@ -74,7 +74,7 @@ void stable::enterFunction(const symbol* symb)
 {
 #ifdef RAMSEY_DEBUG
     if (func != NULL)
-        throw ramsey_exception();
+        throw ramsey_exception("stable::enterFunction");
 #endif
     func = symb;
 }

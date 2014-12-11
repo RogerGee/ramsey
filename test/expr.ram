@@ -5,3 +5,7 @@ fun f() as in
     ((((5))))
     i <- j <- -function(5) + 2*3 - 23/2 + 4*(5+9)
 endfun
+
+fun function(in arg)
+    toss 7777/arg
+endfun

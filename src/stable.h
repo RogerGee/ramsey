@@ -51,7 +51,7 @@ namespace ramsey
         virtual const char* get_name_impl() const = 0;
         virtual token_t get_type_impl() const = 0;
         virtual skind get_kind_impl() const = 0;
-        virtual token_t* get_argtypes_impl() const { throw ramsey_exception(); }
+        virtual token_t* get_argtypes_impl() const { throw ramsey_exception("unimplemented"); }
     };
 
     bool operator==(const symbol&, const symbol&);
@@ -66,15 +66,24 @@ namespace ramsey
         bool add(const symbol* symb);
         const symbol* getSymbol(const char* id) const; // returns NULL if symbol not found
 
+        // handle functions
         void enterFunction(const symbol* symb);
         const symbol* getFunction() const // return the function symbol whose scope overlaps the current scope
         { return func; }
         void exitFunction();
+
+        // handle loops
+        void enterLoop()
+        { ++loop; }
+        bool inLoop() const
+        { return loop > 0; }
+        void exitLoop()
+        { --loop; }
     private:
         std::deque<std::unordered_map<std::string,const symbol*> > table;
-        //const symbol* find(std::string name) const;
 
         const symbol* func;
+        int loop;
     };
 }
 

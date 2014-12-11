@@ -27,8 +27,12 @@ namespace ramsey
     class ramsey_exception : public std::exception
     {
     public:
+        ramsey_exception(const char* err)
+            : _err(err) {}
         virtual const char* what() const throw()
-        { return "An assertion exception was thrown"; }
+        { return _err; }
+    private:
+        const char* _err;
     };
 }
 

@@ -1,0 +1,13 @@
+fun foo(in A,in B)
+    if (A<B and A>B)
+        in A <- 10
+    elf (A < B)
+        in A <- 20
+    elf (false and false)
+        in A <- 30
+    elf (true and false)
+        in A <- 40
+    else
+        in A <- 50
+    endif
+endfun

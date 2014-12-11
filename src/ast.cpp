@@ -420,7 +420,7 @@ token_t ast_expression_node::get_type() const
 {
 #ifdef RAMSEY_DEBUG
     if (_type == token_invalid)
-        throw ramsey_exception();
+        throw ramsey_exception("ast_expression_node::get_type()");
 #endif
     return _type;
 }

@@ -11,7 +11,7 @@ static bool semantic_type_equality(token_t left,token_t right)
     // token types should be type names
     if ((left!=token_in && left!=token_big && left!=token_small && left!=token_boo)
         || (right!=token_in && right!=token_big && right!=token_small && right!=token_boo))
-        throw ramsey_exception();
+        throw ramsey_exception("semantic_type_equality()");
 #endif
     // semantically "in" can mean either "big" or 'small'
     if ((left==token_big || left==token_small) && right==token_in)
@@ -35,7 +35,7 @@ static const char* semantic_type_name(token_t type)
         return "small";
     default:
 #ifdef RAMSEY_DEBUG
-    throw ramsey_exception();
+    throw ramsey_exception("semantic_type_name");
 #endif
         return "bad";
     }
@@ -112,30 +112,42 @@ void ast_declaration_statement_node::semantics_impl(stable& symtable) const
 void ast_selection_statement_node::semantics_impl(stable& symtable) const
 {
     // do visitor pattern
-    symtable.addScope(); // begin new scope BEFORE condition
     _condition->check_semantics(symtable);
     if (_condition->get_type(symtable) != token_boo) // check type semantics on condition
         throw semantic_error("line %d: if-statement condition expression must be of type 'boo'",get_lineno());
-    if (_body != NULL)
-        _body->check_semantics(symtable);
-    symtable.remScope(); // end scope AFTER if-body
+    symtable.addScope(); // begin new scope for if-body
+    { ast_statement_node* n = _body;
+        while (n != NULL) {
+            n->check_semantics(symtable);
+            n = n->get_next();
+        }
+    }
+    symtable.remScope(); // end if-body scope
     if (_elf != NULL)
         _elf->check_semantics(symtable);
     symtable.addScope(); // add scope for else-body
-    if (_else != NULL)
-        _else->check_semantics(symtable);
-    symtable.remScope();
+    { ast_statement_node* n = _else;
+        while (n != NULL) {
+            n->check_semantics(symtable);
+            n = n->get_next();
+        }
+    }
+    symtable.remScope(); // end else-body scope
 }
 
 void ast_elf_node::semantics_impl(stable& symtable) const
 {
     // do visitor pattern
-    symtable.addScope(); // begin new scope BEFORE condition
     _condition->check_semantics(symtable);
     if (_condition->get_type(symtable) != token_boo) // check type semantics on condition
         throw semantic_error("line %d: elf-statement condition expression must be of type 'boo'",get_lineno());
-    if (_body != NULL)
-        _body->check_semantics(symtable);
+    symtable.addScope(); // begin new scope for elf-body
+    { ast_statement_node* n = _body;
+        while (n != NULL) {
+            n->check_semantics(symtable);
+            n = n->get_next();
+        }
+    }
     symtable.remScope(); // end scope AFTER elf-body
     if (_elf != NULL)
         _elf->check_semantics(symtable);
@@ -144,12 +156,18 @@ void ast_elf_node::semantics_impl(stable& symtable) const
 void ast_iterative_statement_node::semantics_impl(stable& symtable) const
 {
     // do visitor pattern
-    symtable.addScope(); // add scope BEFORE condition
     _condition->check_semantics(symtable);
     if (_condition->get_type(symtable) != token_boo)
         throw semantic_error("line %d: iterative-statement condition expression must be of type 'boo'",get_lineno());
-    if (_body != NULL)
-        _body->check_semantics(symtable);
+    symtable.addScope(); // add scope for loop-body
+    symtable.enterLoop();
+    { ast_statement_node* n = _body;
+        while (n != NULL) {
+            n->check_semantics(symtable);
+            n = n->get_next();
+        }
+    }
+    symtable.exitLoop();
     symtable.remScope(); // end scope after statement body
 }
 
@@ -164,6 +182,8 @@ void ast_jump_statement_node::semantics_impl(stable& symtable) const
         if (!semantic_type_equality(funcType,tossType) && (tossType!=token_small || funcType!=token_big))
             throw semantic_error("line %d: cannot convert '%s' to '%s' in return",get_lineno(),semantic_type_name(tossType),semantic_type_name(funcType));
     }
+    else if ( !symtable.inLoop() )
+        throw semantic_error("line %d: 'smash' statement only allowed in loop body",get_lineno());
 }
 
 // expression node derivations
@@ -347,7 +367,7 @@ token_t ast_prefix_expression_node::get_ex_type_impl(const stable& symtable) con
 void ast_postfix_expression_node::semantics_impl(stable& symtable) const
 {
     // make sure that '_op' is an identifier
-    if (_op.node->get_kind()!=ast_primary_expression && !static_cast<ast_primary_expression_node*>(_op.node)->is_identifier())
+    if (_op.node->get_kind()!=ast_primary_expression || !static_cast<ast_primary_expression_node*>(_op.node)->is_identifier())
         throw semantic_error("line %d: function name cannot be non-identifier",get_lineno());
     const symbol* sym;
     vector<token_t> args;
@@ -398,7 +418,7 @@ token_t ast_primary_expression_node::get_ex_type_impl(const stable& symtable) co
     if (_tok->type() == token_number)
         return token_in;
 #ifdef RAMSEY_DEBUG
-    throw ramsey_exception();
+    throw ramsey_exception("ast_primary_expression_node::get_ex_type_impl()");
 #endif
     return token_invalid;
 }

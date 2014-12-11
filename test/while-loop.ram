@@ -1,0 +1,13 @@
+# test assembly output with smashes and tosses from a while loop
+
+fun foo(boo A,boo B)
+    while (A or B)
+        A <- false
+        if (5 < 6)
+            smash
+        else
+            toss 75
+        endif
+    endwhile
+    toss 55
+endfun

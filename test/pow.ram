@@ -1,0 +1,11 @@
+fun pow(in x,in n) as big
+    in i <- 0
+    in result <- 1
+
+    while (i < n)
+        result <- result * x
+        i <- i + 1
+    endwhile
+
+    toss result
+endfun

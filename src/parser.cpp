@@ -843,8 +843,8 @@ void parser::jump_statement()
     }
     else if (lex.curtok().type() == token_smash)
     {
-        ++lex;
         builders.top()->add_token(&lex.curtok());
+        ++lex;
         if (!eol())
             throw parser_error("line %d: expected newline after 'smash'", linenumber);
     }

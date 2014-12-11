@@ -1,12 +1,13 @@
-# this function should pass inspection
+# this function should pass inspection and is very tricky
+# to parse
 
 fun myfun() as boo
     in i
     i <- 5
-    if ((i<-5)<5)
+    if ((i<-5)<7)
         toss true
     elf ((i <--5)<9)
-        toss -1*i
+        toss -1*i > -50
     endif
 
     toss (not (not (not not true)))
