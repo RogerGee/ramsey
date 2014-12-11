@@ -2,6 +2,7 @@
 #ifndef CODEGEN_H
 #define CODEGEN_H
 #include <cstdarg>
+#include <stdio.h>
 #include <sstream>
 #include <queue>
 #include <stack>
