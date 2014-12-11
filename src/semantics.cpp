@@ -223,7 +223,7 @@ token_t ast_logical_or_expression_node::get_ex_type_impl(const stable& symtable)
 {
     for (auto iter = _ops.begin();iter != _ops.end();++iter) {
         if (iter->node->get_type(symtable) != token_boo)
-            throw semantic_error("line %d: or-operator must have operands of type 'boo'");
+            throw semantic_error("line %d: or-operator must have operands of type 'boo'",get_lineno());
     }
     // should always be a 'boo' type expression
     return token_boo;
@@ -241,7 +241,7 @@ token_t ast_logical_and_expression_node::get_ex_type_impl(const stable& symtable
 {
     for (auto iter = _ops.begin();iter != _ops.end();++iter) {
         if (iter->node->get_type(symtable) != token_boo)
-            throw semantic_error("line %d: and-operator must have operands of type 'boo'");
+            throw semantic_error("line %d: and-operator must have operands of type 'boo'",get_lineno());
     }
     // should always be a 'boo' type expression
     return token_boo;
