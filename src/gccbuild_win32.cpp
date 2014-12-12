@@ -169,6 +169,6 @@ void gccbuilder::execute()
 	command += "-o " + prog + " -xassembler - -xc " + _cfile;
 	if (!CreateProcess(NULL, &command[0], NULL, NULL, true, 0, NULL, NULL, 
 		&p->startinf, &p->procinf))
-		throw ramsey_exception("CreateProcess() failure");
+		throw gccbuilder_error("CreateProcess() failure; is GCC installed?");
 	static_cast<pipebuf*>(_buf)->close_read();
 }

@@ -103,7 +103,7 @@ int code_generator::next_variable_offset(token_t type)
        type and use them as needed; the allocation count will
        be kept at a 4-byte boundry */
     // grab iterator to queue of available allocations by type
-    int iter, offset;
+    int iter = 0, offset;
     static const int widths[] = {4,2,1};
     if (type == token_boo)
         iter = 2;

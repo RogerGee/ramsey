@@ -1,15 +1,34 @@
 CS355 Compiler Project - Roger Gee and Ethan Rutherford - Fall 2014
+
+Roger Gee <rpg11a@acu.edu>
+Ethan Rutherford <epr12a@acu.edu>
 --------------------------------------------------------------------------------
 This project implements a compiler for the simple programming language
-Ramsey created at ACU by the Fall 2014 CS 355 Compiler Construction class.
+Ramsey designed at Abilene Christian University by the Fall 2014 CS 355 Compiler
+Construction class.
+
+This compiler works hand-in-hand with GCC tools to build a native binary
+executable file by linking the assembled Ramsey code with assembled C code.
+The C code acts as a driver to run the Ramsey code, handling any input and
+output operations.
+
+The specification for the Ramsey language is documented in the file
+'lang-spec.txt'. This repository also contains numerous sample Ramsey programs.
+
+This compiler compiles Ramsey code down to x86 GAS (GNU Assembler)
+instructions; you will need to have GCC installed (MinGW on MS Windows) on
+your system in order for the Ramsey compiler to build executable binaries.
+Make sure that the GCC toolchain is in your PATH environment variable. When
+you invoke the Ramsey compiler, the process will create a pipeline similar to:
+    $ ramsey | gcc -m32 -O0 -xassembler - -xc driver.c
 --------------------------------------------------------------------------------
 Building the test module:
 
 To compile the project with its testing module, run 'make' with the 'test' rule:
     $ make test
 
-This should generate a single executable that links together the compiler code and
-a test module that will display the intermediate compilation stages.
+This should generate a single executable that links together the compiler code
+and a test module that will display the intermediate compilation stages.
 
 Current operations performed by test module:
     - print out lexical tokens and (if necessary) their source strings
@@ -18,19 +37,29 @@ source was successfully parsed or print out an error message
     - print out the abstract syntax tree
     - print out the assembly code generated from the abstract syntax tree
 
-To run the test module, pass a file name to the test program on its command-line:
+To run the test module, pass a file name to the test program on its
+command-line:
     $ ./ramsey-test source.ram
 --------------------------------------------------------------------------------
 Building the actual compiler:
 
-To compile the compiler, run either the 'all' or 'debug' rules. The standard make
-'all' rule will build the production binary executable file whereas the 'debug'
-rule will build the testing binary with debug information:
+To compile the compiler, run either the 'all' or 'debug' rules. The standard
+make 'all' rule will build the production binary executable file whereas the
+'debug' rule will build the testing binary with debug information:
     $ make          # build production binary
     $ make debug    # build debug binary
 
 You can now run the compiler like so:
     $ ./ramsey prog.ram prog-driver.c
 
-The above command will create a binary file called 'prog' that contains assembled
-code from both 'prog.ram' and 'prog-driver.c'.
+The above command will create a binary file called 'prog' that contains
+assembled code from both 'prog.ram' and 'prog-driver.c'.
+--------------------------------------------------------------------------------
+Building on MS Windows:
+
+Included in this repository is a 'build.bat' script to build the project for
+MS Windows. You can give it one of several options:
+    > build         ::this generates a production build
+    > build debug   ::this generates build with debug symbols
+    > build test    ::this generates a build using the test module
+--------------------------------------------------------------------------------
