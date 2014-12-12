@@ -35,6 +35,7 @@ endif
 # header file dependencies
 RAMSEY_ERROR_H = ramsey-error.h
 CODEGEN_H = codegen.h
+GCCBUILD_H = gccbuild.h $(RAMSEY_ERROR_H)
 LEXER_H = lexer.h $(RAMSEY_ERROR_H)
 STABLE_H = stable.h $(LEXER_H)
 AST_H = ast.h ast.tcc $(RAMSEY_ERROR_H) $(LEXER_H) $(STABLE_H)
@@ -49,7 +50,7 @@ OBJECTS = lexer.o parser.o ast.o ramsey-error.o stable.o semantics.o codegen.o
 ifeq ($(MAKECMDGOALS),test)
 OBJECTS := $(OBJECTS) test.o
 else
-OBJECTS := $(OBJECTS) ramsey.o
+OBJECTS := $(OBJECTS) ramsey.o gccbuild.o
 endif
 OBJECTS := $(addprefix $(OBJDIR)/,$(OBJECTS))
 
@@ -79,8 +80,10 @@ $(OBJDIR)/codegen.o: codegen.cpp $(CODEGEN_H) $(AST_H)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/codegen.o codegen.cpp
 $(OBJDIR)/test.o: test.cpp $(PARSER_H)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/test.o test.cpp
-$(OBJDIR)/ramsey.o: ramsey.cpp $(PARSER_H)
+$(OBJDIR)/ramsey.o: ramsey.cpp $(PARSER_H) $(GCCBUILD_H)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/ramsey.o ramsey.cpp
+$(OBJDIR)/gccbuild.o: gccbuild_posix.cpp $(GCCBUILD_H)
+	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/gccbuild.o gccbuild_posix.cpp
 
 # other targets
 $(OBJDIR):

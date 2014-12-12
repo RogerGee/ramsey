@@ -1,0 +1,22 @@
+# find the nth fibonacci term
+
+fun fib(in n)
+    in term <- 3
+    in n1 <- 0
+    in n2 <- 1
+
+    if (n = 1)
+        toss n1
+    elf (n = 2)
+        toss n2
+    endif
+
+    while (term <= n)
+        in tmp <- n2
+        n2 <- n1 + n2
+        n1 <- tmp
+        term <- term + 1
+    endwhile
+
+    toss n2
+endfun

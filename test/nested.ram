@@ -1,0 +1,21 @@
+# test nested blocks
+
+fun foo(small A, small B) as small
+    small ret <- 0
+
+    if (A = B)
+       if (A mod (2*2-2) = 0+1)
+          if (A mod 2 != 0)
+             ret <- A * B
+          else
+             ret <- -55
+          endif
+       else
+          ret <- A * A
+       endif
+    else
+       ret <- B * B
+    endif
+
+    toss ret
+endfun
