@@ -1,9 +1,9 @@
 /* parser.h - CS355 Compiler Project */
 #ifndef PARSER_H
 #define PARSER_H
+#include <stack>
 #include "lexer.h" // gets "ramsey-error.h"
 #include "ast.h"
-#include <stack>
 
 namespace ramsey
 {
@@ -30,7 +30,7 @@ namespace ramsey
         int sloc() const
         { return linenumber; }
         const ast_node* get_ast() const
-        { return ast; }
+        { return ast; } // if NULL then source file was empty
         const lexer& get_lexer() const
         { return lex; }
     private:

@@ -7,9 +7,10 @@ using namespace std;
 using namespace ramsey;
 
 // code_generator
+/*static*/ const int code_generator::REGISTER_WIDTH = 4;
 code_generator::code_generator(ostream& output)
-    : _output(output), _alloc(0), _narg(0), _reghead(reg_invalid), _regcnt(-1),
-      _lbl(1), _retlbl(0)
+    : _output(output), _alloc(0), _narg(0), _reghead(reg_invalid), _regnonvol(reg_EBX),
+      _regcnt(-1), _lbl(1), _retlbl(0)
 {
     _before.flags(ios_base::left | _before.flags());
     _body.flags(ios_base::left | _body.flags());
@@ -33,21 +34,38 @@ void code_generator::end_function()
 {
     if (_retlbl > 0) {
         _body << "lbl" << _retlbl << ":\n";
-        _retlbl = 0;
+        _retlbl = 0; // make sure to reset the label so another function will generate a new one
     }
-    if (_alloc > 0) { // do stack allocation; this value should be aligned at a 4-byte boundry
+    // do stack allocation for local variables; this value should be aligned at a 4-byte boundry
+    if (_alloc > 0)
         instruction_before("subl $%d, %%esp",_alloc);
-        // do function stack cleanup
-        instruction_impl(_body,"leave\0");
-    }
+    // save non-volatile registers
+    for (int i = _regnonvol-1;i >= reg_EBX;--i)
+        instruction_before("pushl %%%s",register_to_string((_register)i,token_big));
+    // restore non-volatile registers
+    for (int i = reg_EBX;i < _regnonvol;++i)
+        instruction("popl %%%s",register_to_string((_register)i,token_big));
+    if (_alloc > 0)
+        // do function stack cleanup with 'leave' instruction
+        instruction("leave");
     else
-        // do function stack cleanup (ESP does not need adjustment)
+        // do function stack cleanup (nothing besides restoring old EBP value)
         instruction("popl %%ebp");
-    instruction_impl(_body,"ret\0");
-    // place preamble into output, then rest of function body
+    instruction("ret");
+    // place function preamble into output, then rest of function body
     _output << _before.str() << _body.str() << endl;
     // reset stringstream objects
     _before.str(string()); _body.str(string());
+    // reset stack allocator
+    for (short i = 0;i < 3;++i)
+        _allocations[i] = queue<int>();
+    _alloc = 0;
+    _narg = 0;
+    // reset register allocator
+    _reghead = reg_invalid;
+    _regnonvol = reg_EBX;
+    _regcnt = -1;
+    // note: _lbl does not need to be reset as the labels are global to all functions
 }
 void code_generator::instruction(const char* format, ...)
 {
@@ -133,6 +151,8 @@ void code_generator::allocate_result_register()
     _reghead = (_register)(_regcnt % reg_end);
     if (_regcnt >= reg_end)
         instruction("pushl %%%s",current_result_register());
+    else if (_regcnt>=reg_EBX && _regcnt<=reg_end && _regcnt>=_regnonvol) // we allocated a non-volatile register; its value will have to be saved
+        _regnonvol = (_register)((int)_regcnt+1);
 }
 void code_generator::deallocate_result_register()
 {
@@ -147,21 +167,14 @@ void code_generator::deallocate_result_register()
 }
 void code_generator::save_registers()
 {
-    // save all but the current register
-    int i;
-    for (i = 0;i < _reghead;++i)
+    // save all volatile registers (don't include the current register)
+    for (int i = 0;i<_reghead && i<reg_EBX;++i)
         instruction("pushl %%%s",register_to_string((_register)i,token_big));
-    if (_regcnt >= reg_end)
-        for (i += 1;i < reg_end;++i)
-            instruction("pushl %%%s",register_to_string((_register)i,token_big));
 }
 void code_generator::restore_registers()
 {
-    // restore all but the current register
-    if (_regcnt >= reg_end)
-        for (int i = reg_end-1;i > _reghead;--i)
-            instruction("popl %%%s",register_to_string((_register)i,token_big));
-    for (int i = _reghead-1;i >= 0;--i)
+    // restore all volatile registers (don't include the current register)
+    for (int i = _reghead<reg_EBX ? _reghead-1 : reg_EBX-1;i >= 0;--i)
         instruction("popl %%%s",register_to_string((_register)i,token_big));
 }
 int code_generator::get_return_label()
@@ -196,12 +209,12 @@ int code_generator::get_return_label()
 /*static*/ const char* code_generator::register_to_string(_register r,token_t t)
 {
 #ifdef RAMSEY_DEBUG
-    if (r == reg_invalid)
+    if (r <= reg_invalid || r >= reg_end)
         throw ramsey_exception("code_generator::register_to_string");
 #endif
-    static const char* LONG_REGISTERS[] = {"eax","ebx","ecx","edx"};
-    static const char* WORD_REGISTERS[] = {"ax","bx","cx","dx"};
-    static const char* BYTE_REGISTERS[] = {"al","bl","cl","dl"};
+    static const char* LONG_REGISTERS[] = {"eax","edx","ecx","ebx","esi","edi"};
+    static const char* WORD_REGISTERS[] = {"ax","dx","cx","bx","si","di"};
+    static const char* BYTE_REGISTERS[] = {"al","dl","cl","bl","",""};
     if (t==token_in || t==token_big)
         return LONG_REGISTERS[r];
     else if (t == token_small)
@@ -441,7 +454,7 @@ void ast_logical_or_expression_node::codegen_impl(stable& symtable,code_generato
     /* to implement logic-OR, we test to see if a term is non-zero; if so, the control assigns
        will jump to a block that assigns 1 to the result register; otherwise control falls through
        to test the next term; 0 is assigned in the default case */
-    bool alloc = cgen.expects_result();
+    bool alloc = !cgen.expects_result();
     int lbltrue = cgen.get_unique_label(), lblfalse = cgen.get_unique_label(), lbldone = cgen.get_unique_label();
     const char* reg = load_operand(_ops[0],symtable,cgen,alloc); // process the first term independently to effectively handle the else case
     // process the rest of terms; the grammar guarantees at least 2 (so at least 1 for the below loop)
@@ -575,29 +588,45 @@ void ast_multiplicative_expression_node::codegen_impl(stable& symtable,code_gene
         if (_operators[j]->type() == token_multiply)
             cgen.instruction("imull %%%s, %%%s",cgen.current_result_register(),reg);
         else { // token_multiply or token_mod
-            // this is really nasty...
-            bool saveEAX, saveEDX;
-            saveEAX = strcmp(reg,"eax") != 0; // true if eax is not the result register; eax must be in use
-            saveEDX = cgen.register_in_use(code_generator::reg_EDX); // is EDX holding an intermediate result?
-            if (saveEAX) {
-                cgen.instruction("pushl %%eax");
-                cgen.instruction("movl %%%s, %%eax",reg);
+            // this is really nasty... I hard code in each case.
+            const char* restore = NULL;
+            const char* divisor = cgen.current_result_register();
+            if (strcmp(reg,"eax") == 0) { // is the dividend in EAX?
+                // EDX is the divisor; it is going to be cobbled by CDQ instruction so
+                // move it to ECX
+                cgen.instruction("movl %%edx, %%ecx");
+                divisor = "ecx";
             }
-            if (saveEDX)
-                cgen.instruction("pushl %%edx");
+            else if (strcmp(reg,"edx") == 0) { // is the dividend in EDX?
+                // move dividend into dividend register; it will be cobbled by CDQ instruction
+                // the divisor (ECX) is fine where it is; push EAX on stack since the allocator
+                // must be using it
+                cgen.instruction("pushl %%eax");
+                cgen.instruction("movl %%edx, %%eax");
+                restore = "eax";
+            }
+            else if (strcmp(reg,"ebx") == 0) { // is the dividend in EBX?
+                // swap EBX with EAX
+                cgen.instruction("pushl %%eax");
+                cgen.instruction("movl %%ebx, %%eax");
+                cgen.instruction("popl %%ebx");
+                cgen.instruction("push %%edx");
+                divisor = "ebx";
+                restore = "edx";
+            }
+            else {
+                cgen.instruction("movl %%%s, %%eax",reg);
+                cgen.instruction("push %%edx");
+                restore = "edx";
+            }
             cgen.instruction("cdq"); // sign-extend eax into edx
-            if (cgen.current_result_register_flag() == code_generator::reg_EDX)
-                cgen.instruction("idivl (%%esp)");
-            else
-                cgen.instruction("idivl %%%s",cgen.current_result_register());
-            if (_operators[j]->type() == token_mod)
+            cgen.instruction("idivl %%%s",divisor);
+            if (_operators[j]->type()==token_mod && strcmp(reg,"edx")!=0)
                 cgen.instruction("movl %%edx, %%%s",reg); // move remainder into result register
-            else if (saveEAX) // and token_divide
+            else if (_operators[j]->type()==token_divide && strcmp(reg,"eax")!=0)
                 cgen.instruction("movl %%eax, %%%s",reg); // move quotient into result register
-            if (saveEDX)
-                cgen.instruction("popl %%edx");
-            if (saveEAX)
-                cgen.instruction("popl %%eax");
+            if (restore != NULL)
+                cgen.instruction("popl %%%s",restore);
         }
         cgen.deallocate_result_register();
     }
@@ -664,7 +693,7 @@ void ast_postfix_expression_node::codegen_impl(stable& symtable,code_generator& 
         cgen.instruction("movl %%eax, %%%s",cgen.current_result_register());
     // unload the stack
     if (nargs > 0)
-        cgen.instruction("addl $%d, %%esp",nargs*4);
+        cgen.instruction("addl $%d, %%esp",nargs*code_generator::REGISTER_WIDTH);
     // restore registers 
     cgen.restore_registers();
 }

@@ -25,7 +25,9 @@ endfun
 
 #give "You are being attacked by a giant slug monster."
 fun main()
-
+boo dead <- false
+in health <- 2000
+in enemyHealth <- 500
 while (not dead)
     do_commands()
 
@@ -60,10 +62,10 @@ while (not dead)
            endif
        endif
     elf (com = 2)
-        dead = true
+        dead <- true
     elf (com = 3)
         #give "Well, that was easy, you vanquished it instantly."
-        dead = true
+        dead <- true
     elf (com > 3 or com >= 2)
         #give "Bad number: "
         #give "\""

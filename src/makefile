@@ -17,13 +17,14 @@ ifeq ($(MAKECMDGOALS),)
 COMPILE = g++ -c -O3 -Wall -pedantic-errors -Werror -Wextra -Wshadow -Wfatal-errors -Wno-unused-variable --std=gnu++0x
 LINK = g++ -s
 OBJDIR = $(OBJDIR_NAME)
+MACORS = -DRAMSEY_POSIX
 PROGRAM = $(PROGRAM_NAME)
 else
 # config for anything else (debug, test)
 COMPILE = g++ -g -c -Wall -pedantic-errors -Werror -Wextra -Wshadow -Wfatal-errors -Wno-unused-variable --std=gnu++0x
 LINK = g++
 OBJDIR = $(OBJDIR_NAME_DEBUG)
-MACROS = -DRAMSEY_DEBUG
+MACROS = -DRAMSEY_DEBUG -DRAMSEY_POSIX
 ifeq ($(MAKECMDGOALS),test)
 PROGRAM = $(PROGRAM_NAME_TEST)
 else
@@ -47,6 +48,8 @@ OBJECTS = lexer.o parser.o ast.o ramsey-error.o stable.o semantics.o codegen.o
 # add optional object code files depending on configuration
 ifeq ($(MAKECMDGOALS),test)
 OBJECTS := $(OBJECTS) test.o
+else
+OBJECTS := $(OBJECTS) ramsey.o
 endif
 OBJECTS := $(addprefix $(OBJDIR)/,$(OBJECTS))
 
@@ -74,8 +77,10 @@ $(OBJDIR)/semantics.o: semantics.cpp $(AST_H)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/semantics.o semantics.cpp
 $(OBJDIR)/codegen.o: codegen.cpp $(CODEGEN_H) $(AST_H)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/codegen.o codegen.cpp
-$(OBJDIR)/test.o: test.cpp $(ALL_HEADER_FILES)
+$(OBJDIR)/test.o: test.cpp $(PARSER_H)
 	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/test.o test.cpp
+$(OBJDIR)/ramsey.o: ramsey.cpp $(PARSER_H)
+	$(COMPILE) $(MACROS) $(OUT)$(OBJDIR)/ramsey.o ramsey.cpp
 
 # other targets
 $(OBJDIR):

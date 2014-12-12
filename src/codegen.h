@@ -2,7 +2,7 @@
 #ifndef CODEGEN_H
 #define CODEGEN_H
 #include <cstdarg>
-#include <stdio.h>
+#include <cstdio>
 #include <sstream>
 #include <queue>
 #include <stack>
@@ -16,12 +16,18 @@ namespace ramsey
         enum _register
         { // just use the general registers for results
             reg_invalid = -1,
-            reg_EAX,
-            reg_EBX,
-            reg_ECX,
+            // !!DO NOT CHANGE THE ORDER OF THIS ENUM'S MEMBERS!!
+            // these registers are free to use across calls (volatile)
+            reg_EAX = 0,
             reg_EDX,
+            reg_ECX,
+            // registers from this point on must be preserved by the callee (non-volatile)
+            reg_EBX, // EBX must be the first non-volatile register in this list
+            //reg_ESI, // I removed these because they don't have a low-byte version
+            //reg_EDI,
             reg_end
         };
+        static const int REGISTER_WIDTH;
 
         code_generator(std::ostream& output);
 
@@ -47,7 +53,7 @@ namespace ramsey
         _register current_result_register_flag() const
         { return _reghead; }
         bool register_in_use(_register reg) const
-        { return _regcnt >= reg; }
+        { return reg <= _reghead; }
         void deallocate_result_register();
         void save_registers(); // given config, push registers on stack
         void restore_registers(); // given config, pop registers from stack
@@ -69,6 +75,7 @@ namespace ramsey
         int _narg; // function argument counter
         std::queue<int> _allocations[3]; // for the stack allocator
         _register _reghead; // current available register
+        _register _regnonvol; // all non-volatile registers up to and excluding this one need to be saved
         int _regcnt; // number of outstanding result registers
         int _lbl, _retlbl; // current available local label, return label
         std::stack<int> _storlbls; // stack of stored local labels

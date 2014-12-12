@@ -57,7 +57,8 @@ void parser::program()
     builders.push(&builder);
     function_list();
     builders.pop();
-    ast = builder.build();
+    if ( !builder.is_empty() ) // source file could have been empty...
+        ast = builder.build();
 }
 
 void parser::function_list()
