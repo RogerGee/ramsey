@@ -116,6 +116,7 @@ ast_function_node::~ast_function_node()
     if (_statements != NULL)
         delete _statements;
 }
+#ifdef RAMSEY_DEBUG
 void ast_function_node::output_impl(ostream& stream,int nlevel) const
 {
     stream << "function:id=" << *_id << ",type=";
@@ -131,6 +132,7 @@ void ast_function_node::output_impl(ostream& stream,int nlevel) const
         _statements->output_at_level(stream,nlevel);
     }
 }
+#endif
 token_t* ast_function_node::get_argtypes_impl() const
 {
     // create a dynamically allocated list of parameter types
@@ -185,10 +187,12 @@ ast_parameter_node::ast_parameter_node()
     : _typespec(NULL), _id(NULL)
 {
 }
+#ifdef RAMSEY_DEBUG
 void ast_parameter_node::output_impl(ostream& stream,int) const
 {
     stream << "parameter:id=" << *_id << ",type=" << *_typespec << '\n';
 }
+#endif
 ast_parameter_node* ast_parameter_builder::build()
 {
     if ( is_empty() )
