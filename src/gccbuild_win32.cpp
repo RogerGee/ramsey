@@ -28,6 +28,8 @@ class pipebuf : public streambuf
 		void close_write();
 		void close_read();
 	private:
+		static const ptrdiff_t BUFSIZE = 4096;
+	
 		virtual int_type overflow(int_type);
 		virtual int_type sync();
 		
@@ -36,6 +38,7 @@ class pipebuf : public streambuf
 		pipebuf& operator =(const pipebuf&);
 		
 		HANDLE io[2];
+		char _buffer[BUFSIZE+1];
 };
 
 pipebuf::pipebuf()
@@ -46,6 +49,7 @@ pipebuf::pipebuf()
 	secAttr.lpSecurityDescriptor = NULL;
 	if(!CreatePipe(&io[0], &io[1], &secAttr, 0))
 		throw ramsey_exception("CreatePipe() failure");
+	setp(_buffer,_buffer+BUFSIZE);
 }
 pipebuf::~pipebuf()
 {
@@ -73,37 +77,27 @@ streambuf::int_type pipebuf::overflow(streambuf::int_type ch)
 {
 	if (ch == traits_type::eof())
         return traits_type::eof();
-    static const ptrdiff_t BUFSIZE = 4096;
     // write all data in streambuf to pipe
     char* base = pbase(), *e = pptr();
-    ptrdiff_t n = 0;
-    char tmpbuf[BUFSIZE+1];
-    for (char* p = base;p!=e && n<BUFSIZE;++p)
-        tmpbuf[n++] = *p;
-    pbump(-n);
-    tmpbuf[n++] = ch;
-	DWORD doofus;
-	for (int i = 0; i < n; i++)
-		cout << tmpbuf[i];
-    if (!WriteFile(io[1], tmpbuf, n, &doofus, NULL))
+    ptrdiff_t n = e - base;
+   	DWORD doofus;
+    *e = ch; // guarenteed to be present at end of buffer
+    if (!WriteFile(io[1], base, n+1, &doofus, NULL))
         throw ramsey_exception("WriteFile() failure");
+    pbump(-n);
     return ch;
 }
 int pipebuf::sync()
 {
-	static const ptrdiff_t BUFSIZE = 4096;
     // write all data in streambuf to pipe
     char* base = pbase(), *e = pptr();
-    ptrdiff_t n = 0;
-    char tmpbuf[BUFSIZE+1];
-    for (char* p = base;p!=e && n<BUFSIZE;++p)
-        tmpbuf[n++] = *p;
-    pbump(-n);
-	DWORD doofus;
-	for (int i = 0; i < n; i++)
-		cout << tmpbuf[i];
-    if (!WriteFile(io[1], tmpbuf, n, &doofus, NULL))
-        throw ramsey_exception("WriteFile() failure");
+    ptrdiff_t n = e - base;
+    if (n > 0) {
+		DWORD doofus;
+    	if (!WriteFile(io[1], base, n, &doofus, NULL))
+        	throw ramsey_exception("WriteFile() failure");
+    	pbump(-n);
+    }
     return 0;
 }
 

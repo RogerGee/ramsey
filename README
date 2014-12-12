@@ -1,0 +1,36 @@
+CS355 Compiler Project - Roger Gee and Ethan Rutherford - Fall 2014
+--------------------------------------------------------------------------------
+This project implements a compiler for the simple programming language
+Ramsey created at ACU by the Fall 2014 CS 355 Compiler Construction class.
+--------------------------------------------------------------------------------
+Building the test module:
+
+To compile the project with its testing module, run 'make' with the 'test' rule:
+    $ make test
+
+This should generate a single executable that links together the compiler code and
+a test module that will display the intermediate compilation stages.
+
+Current operations performed by test module:
+    - print out lexical tokens and (if necessary) their source strings
+    - print out status of source code parse; this will either indicate that the
+source was successfully parsed or print out an error message
+    - print out the abstract syntax tree
+    - print out the assembly code generated from the abstract syntax tree
+
+To run the test module, pass a file name to the test program on its command-line:
+    $ ./ramsey-test source.ram
+--------------------------------------------------------------------------------
+Building the actual compiler:
+
+To compile the compiler, run either the 'all' or 'debug' rules. The standard make
+'all' rule will build the production binary executable file whereas the 'debug'
+rule will build the testing binary with debug information:
+    $ make          # build production binary
+    $ make debug    # build debug binary
+
+You can now run the compiler like so:
+    $ ./ramsey prog.ram prog-driver.c
+
+The above command will create a binary file called 'prog' that contains assembled
+code from both 'prog.ram' and 'prog-driver.c'.

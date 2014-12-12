@@ -28,6 +28,8 @@ public:
     void close_write_fd();
     void close_read_fd();
 private:
+    static const ptrdiff_t BUFSIZE = 4096;
+
     virtual int_type overflow(int_type);
     virtual int sync();
 
@@ -36,13 +38,14 @@ private:
     pipebuf& operator =(const pipebuf&);
 
     int _pfd[2];
+    char _buffer[BUFSIZE+1];
 };
 
 pipebuf::pipebuf()
 {
     if (pipe(_pfd) == -1)
         throw ramsey_exception("fail pipe()");
-
+    setp(_buffer,_buffer+BUFSIZE);
 }
 pipebuf::~pipebuf()
 {
@@ -52,44 +55,42 @@ pipebuf::~pipebuf()
 }
 void pipebuf::close_write_fd()
 {
-    close(_pfd[1]);
-    _pfd[1] = -1;
+    if (_pfd[1] != -1) {
+        close(_pfd[1]);
+        _pfd[1] = -1;
+    }
 }
 void pipebuf::close_read_fd()
 {
-    close(_pfd[0]);
-    _pfd[0] = -1;
+    if (_pfd[0] != -1) {
+        close(_pfd[0]);
+        _pfd[0] = -1;
+    }
 }
 streambuf::int_type pipebuf::overflow(streambuf::int_type ch)
 {
     if (ch == traits_type::eof())
         return traits_type::eof();
-    static const ptrdiff_t BUFSIZE = 4096;
     // write all data in streambuf to pipe
     char* base = pbase(), *e = pptr();
-    ptrdiff_t n = 0;
-    char tmpbuf[BUFSIZE+1];
-    for (char* p = base;p!=e && n<BUFSIZE;++p)
-        tmpbuf[n++] = *p;
-    pbump(-n);
-    tmpbuf[n++] = ch;
-    if (write(_pfd[1],tmpbuf,n) == -1)
+    ptrdiff_t n = e - base;
+    *e = ch; // guarenteed to be present at end of buffer
+    if (write(_pfd[1],base,n+1) == -1)
         throw ramsey_exception("fail write()");
+    pbump(-n);
     return ch;
 }
 int pipebuf::sync()
 {
-    static const ptrdiff_t BUFSIZE = 4096;
     // write all data in streambuf to pipe
     char* base = pbase(), *e = pptr();
-    ptrdiff_t n = 0;
-    char tmpbuf[BUFSIZE+1];
-    for (char* p = base;p!=e && n<BUFSIZE;++p)
-        tmpbuf[n++] = *p;
-    pbump(-n);
-    if (write(_pfd[1],tmpbuf,n) == -1)
-        throw ramsey_exception("fail write()");
-    return 0;    
+    ptrdiff_t n = e - base;
+    if (n > 0) {
+        if (write(_pfd[1],base,n) == -1)
+            throw ramsey_exception("fail write()");
+        pbump(-n);
+    }
+    return 0;
 }
 
 // gccbuilder
@@ -130,7 +131,7 @@ gccbuilder::~gccbuilder()
     _buf->pubsync();
     static_cast<pipebuf*>(_buf)->close_write_fd();
     delete _buf;
-    // wait on the child processes
+    // wait on the child process
     pid_t pidChild;
     pidChild = *reinterpret_cast<pid_t*>(_pi);
     delete reinterpret_cast<pid_t*>(_pi);

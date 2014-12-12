@@ -1,0 +1,13 @@
+# solve GCD using Euclid's
+
+fun lcm(in a,in b)
+    toss a*b/gcd(a,b)
+endfun
+
+fun gcd(in a,in b)
+    if (b=0)
+        toss a
+    endif
+
+    toss gcd(b,a mod b)
+endfun

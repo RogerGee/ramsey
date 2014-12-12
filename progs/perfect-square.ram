@@ -1,0 +1,14 @@
+# determine if number has perfect square
+
+fun hasSquare(in n) as boo
+    if (n = 1)
+        toss true
+    endif
+
+    in root <- 2
+    while (root*root < n)
+        root <- root + 1
+    endwhile
+
+    toss root*root = n
+endfun
