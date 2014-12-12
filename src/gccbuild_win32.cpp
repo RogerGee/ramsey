@@ -3,7 +3,6 @@
 #include <streambuf>
 #include <cstring>
 #include <windows.h>
-#include <iostream>
 using namespace std;
 using namespace ramsey;
 
@@ -43,12 +42,11 @@ class pipebuf : public streambuf
 
 pipebuf::pipebuf()
 {
-	SECURITY_ATTRIBUTES secAttr;
-	secAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-	secAttr.bInheritHandle = true;
-	secAttr.lpSecurityDescriptor = NULL;
-	if(!CreatePipe(&io[0], &io[1], &secAttr, 0))
+	if(!CreatePipe(&io[0], &io[1], NULL, 0))
 		throw ramsey_exception("CreatePipe() failure");
+	// set only the read end as inheritable
+	if (!SetHandleInformation(io[0],HANDLE_FLAG_INHERIT,HANDLE_FLAG_INHERIT))
+		throw ramsey_exception("SetHandleInformation() failure");
 	setp(_buffer,_buffer+BUFSIZE);
 }
 pipebuf::~pipebuf()
@@ -174,4 +172,3 @@ void gccbuilder::execute()
 		throw ramsey_exception("CreateProcess() failure");
 	static_cast<pipebuf*>(_buf)->close_read();
 }
-

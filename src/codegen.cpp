@@ -20,7 +20,7 @@ void code_generator::begin_function(const char* name)
 #ifdef RAMSEY_WIN32
     // MSWindows needs prefix underscore on symbol name
     instruction_before(".globl _%s",name);
-    instruction_before(".type _%s, @function",name);
+    //instruction_before(".type _%s, @function",name); // MinGW doesn't like this by itself...
     _before << '_' << name << ":\n";
 #else
     instruction_before(".globl %s",name);
