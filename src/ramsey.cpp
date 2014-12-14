@@ -39,12 +39,10 @@ int main(int argc,const char* argv[])
     } catch (lexer_error& err) {
         cerr << argv[0] << ": syntax error: " << err.what() << endl;
         return 1;
-    }
-    catch (parser_error& err) {
+    } catch (parser_error& err) {
         cerr << argv[0] << ": syntax error: " << err.what() << endl;
         return 1;
-    }
-    catch (semantic_error& err) {
+    } catch (semantic_error& err) {
         cerr << argv[0] << ": semantic error: " << err.what() << endl;
     }
 }

@@ -1,0 +1,32 @@
+fun useTheStackPeople()
+    in A <- 0
+    in B <- 0
+    in C <- 0
+    boo b <- true
+    in D <- 0
+    in E <- 0
+    in F <- 0
+    in G <- 0
+    boo c <- true
+    in H <- 0
+    in I <- 0
+    in J <- 0
+    in K <- 0
+    boo d <- false
+    in L <- 0
+    in M <- 0
+    in N <- 0
+    in O <- 0
+    in P <- 0
+    boo e <- false and true or false or true
+    in Q <- 0
+    in R <- 0
+    in S <- 0
+    in T <- 0
+    in U <- 0
+    in V <- 0
+    in W <- 0
+    in X <- 0
+    in Y <- 0
+    in Z <- 0
+endfun

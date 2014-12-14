@@ -18,7 +18,7 @@ SET MAIN_OBJECTS=src\ramsey.cpp
 :: build test; link to a different main function for testing
 IF '%1'=='test' (
 	::IF '%2'=='vs' %COMPILE_VS% /Feramsey-test.exe /DRAMSEY_DEBUG /Zi /EHsc %OBJECTS% %TEST_OBJECTS% && GOTO end
-	%COMPILE_GNU% -oramsey-test.exe -DRAMSEY_DEBUG -g -std=c++11 %OBJECTS% %TEST_OBJECTS%
+	%COMPILE_GNU% -oramsey-test.exe -DRAMSEY_DEBUG -DRAMSEY_WIN32 -g -std=c++11 %OBJECTS% %TEST_OBJECTS%
 	GOTO end
 )
 

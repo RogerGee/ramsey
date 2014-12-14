@@ -3,6 +3,7 @@
 #include <streambuf>
 #include <cstring>
 #include <unistd.h>
+#include <signal.h>
 #include <sys/wait.h>
 using namespace std;
 using namespace ramsey;
@@ -158,14 +159,20 @@ void gccbuilder::execute()
         // 'as' child process
         // prepare command-line parameters
         string prog = _ramfile; // name the executable after the .ram source (minus extension)
-        size_t n = prog.length();
+        size_t n = prog.length(); int m;
         while (prog[n] != '.')
             --n;
         prog.resize(n);
-        prog = "-o"+prog;
+        m = (int)n-1;
+        while (m>=0 && prog[m]!='/') // ignore directory path
+            --m;
+        if (m >= 0)
+            prog = prog.c_str()+m+1;
+        if (prog.length() == 0)
+            prog = "a.out";
         const char* args[25] = {
             "gcc", "-m32", "-O0", // 32-bit code, no optimizations
-            prog.c_str(), // name output to 'prog'
+            "-o", prog.c_str(), // name output to 'prog'
             "-xassembler", "-", // process assembly input from stdin
             "-xc", _cfile, // compile .c file (this is the driver program)
             NULL

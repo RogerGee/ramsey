@@ -17,7 +17,7 @@ ifeq ($(MAKECMDGOALS),)
 COMPILE = g++ -c -O3 -Wall -pedantic-errors -Werror -Wextra -Wshadow -Wfatal-errors -Wno-unused-variable --std=gnu++0x
 LINK = g++ -s
 OBJDIR = $(OBJDIR_NAME)
-MACORS = -DRAMSEY_POSIX
+MACROS = -DRAMSEY_POSIX
 PROGRAM = $(PROGRAM_NAME)
 else
 # config for anything else (debug, test)
@@ -96,3 +96,10 @@ clean:
 	@if [ -f $(PROGRAM_NAME) ]; then rm --verbose $(PROGRAM_NAME); fi;
 	@if [ -f $(PROGRAM_NAME_DEBUG) ]; then rm --verbose $(PROGRAM_NAME_DEBUG); fi;
 	@if [ -f $(PROGRAM_NAME_TEST) ]; then rm --verbose $(PROGRAM_NAME_TEST); fi;
+
+install:
+	@if [ ! -f $(PROGRAM_NAME) ]; then echo Build project first && exit 1; fi;
+	@cp --verbose $(PROGRAM_NAME) /usr/local/bin
+
+uninstall:
+	@rm --verbose /usr/local/bin/$(PROGRAM_NAME)

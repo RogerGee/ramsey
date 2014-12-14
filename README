@@ -22,6 +22,18 @@ Make sure that the GCC toolchain is in your PATH environment variable. When
 you invoke the Ramsey compiler, the process will create a pipeline similar to:
     $ ramsey | gcc -m32 -O0 -xassembler - -xc driver.c
 --------------------------------------------------------------------------------
+Building the project:
+
+The project
+
+The project requires a C++ compiler with full C++-11 support. The makefile
+included with the project is (by default) used to build binaries for GNU/Linux.
+A Windows batch file has been included to make binaries for MS Windows. For
+Apple OS X systems, the makefile should work nicely however the macro
+'RAMSEY_APPLE' needs to be defined. Source files that include the name 'posix'
+employ POSIX APIs for operating system functionality whereas those that include
+the name 'win32' employ the Windows API.
+--------------------------------------------------------------------------------
 Building the test module:
 
 To compile the project with its testing module, run 'make' with the 'test' rule:
@@ -32,9 +44,9 @@ and a test module that will display the intermediate compilation stages.
 
 Current operations performed by test module:
     - print out lexical tokens and (if necessary) their source strings
-    - print out status of source code parse; this will either indicate that the
-source was successfully parsed or print out an error message
+    - print out status of source code parse (passed or failed with message)
     - print out the abstract syntax tree
+    - print out status of semantic analysis (passed or failed with message)
     - print out the assembly code generated from the abstract syntax tree
 
 To run the test module, pass a file name to the test program on its
@@ -62,4 +74,7 @@ MS Windows. You can give it one of several options:
     > build         ::this generates a production build
     > build debug   ::this generates build with debug symbols
     > build test    ::this generates a build using the test module
+
+This script defines the 'RAMSEY_WIN32' macro which targets the application for
+MS Windows.
 --------------------------------------------------------------------------------

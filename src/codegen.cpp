@@ -22,7 +22,10 @@ void code_generator::begin_function(const char* name)
     instruction_before(".globl _%s",name);
     //instruction_before(".type _%s, @function",name); // MinGW doesn't like this by itself...
     _before << '_' << name << ":\n";
-#else
+#elif RAMSEY_APPLE
+    instruction_before(".globl _%s",name);
+    _before << '_' << name << ":\n";
+#else // POSIX (GNU/LINUX)
     instruction_before(".globl %s",name);
     instruction_before(".type %s, @function",name);
     _before << name << ":\n";
@@ -683,9 +686,11 @@ void ast_postfix_expression_node::codegen_impl(stable& symtable,code_generator& 
     if (alloc)
         cgen.deallocate_result_register();
     // call the function
-#ifdef RAMSEY_WIN32
+#ifdef RAMSEY_WIN32 // requires leading underscore
     cgen.instruction("call _%s",sym->get_name());
-#else
+#elif RAMSEY_APPLE // requires leading underscore
+    cgen.instruction("call _%s",sym->get_name());
+#else // POSIX (GNU/LINUX)
     cgen.instruction("call %s",sym->get_name());
 #endif
     // move function return value into result register (if they are not the same register)
